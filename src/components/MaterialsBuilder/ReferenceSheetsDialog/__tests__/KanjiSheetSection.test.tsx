@@ -19,7 +19,7 @@ vi.mock('@/lib/lessonPrintable', async () => {
   };
 });
 
-import { KanjiSheetSection } from '@/components/MaterialsBuilder/KanjiSheetSection';
+import { KanjiSheetSection } from '@/components/MaterialsBuilder/ReferenceSheetsDialog/KanjiSheetSection';
 import { fetchKanjiStrokes } from '@/lib/kanjiStrokes';
 import { openBlankPrintWindow, writePrintWindow } from '@/lib/lessonPrintable';
 

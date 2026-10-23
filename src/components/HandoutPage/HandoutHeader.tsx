@@ -3,6 +3,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import EditIcon from '@mui/icons-material/Edit';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import PrintIcon from '@mui/icons-material/Print';
 import QuizIcon from '@mui/icons-material/Quiz';
 import StyleIcon from '@mui/icons-material/Style';
@@ -14,17 +15,18 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { formatDate } from '@/components/Group/dueDate';
 import { useGoalLabel } from '@/components/Group/useGoalLabel';
+import { ReferenceSheetsDialog } from '@/components/MaterialsBuilder/ReferenceSheetsDialog';
 import { openPrintWindow, type PrintableVariant } from '@/lib/lessonPrintable';
 import type { LocatedWeek } from '@/lib/lessonUnits';
 import type { Flashcard } from '@/types/flashcard';
 import type { LessonWeekStatus } from '@/types/lessonUnit';
 
 import { HandoutTitle } from './HandoutTitle';
-import { handoutPrintHtml } from './printHandout';
+import { handoutPlanDeck, handoutPrintHtml } from './printHandout';
 
 interface HandoutHeaderProps {
   located: LocatedWeek;
@@ -58,7 +60,15 @@ export function HandoutHeader({
   const theme = useTheme();
   const { brand, success, warning } = theme.palette;
   const [popupBlocked, setPopupBlocked] = useState(false);
+  const [sheetsOpen, setSheetsOpen] = useState(false);
   const { unit, week, previous, next } = located;
+
+  const plan = useMemo(
+    () => ({
+      decks: [handoutPlanDeck({ deckName: week.deckName, emoji: week.deckEmoji, cards })],
+    }),
+    [week.deckName, week.deckEmoji, cards],
+  );
 
   const statusColor =
     week.status === 'current' ? success.main : week.status === 'past' ? warning.main : brand[600];
@@ -194,6 +204,14 @@ export function HandoutHeader({
           {tPrint('printQuizButton')}
         </Button>
         <Button
+          startIcon={<GridOnIcon />}
+          onClick={() => setSheetsOpen(true)}
+          disabled={cards.length === 0}
+          sx={{ textTransform: 'none', fontWeight: 700 }}
+        >
+          {tPrint('referenceSheetsButton')}
+        </Button>
+        <Button
           startIcon={<StyleIcon />}
           component={Link}
           href={`/deck/${week.deckId}`}
@@ -237,6 +255,7 @@ export function HandoutHeader({
           {tPrint('sheetsPopupBlocked')}
         </Alert>
       )}
+      <ReferenceSheetsDialog open={sheetsOpen} onClose={() => setSheetsOpen(false)} plan={plan} />
     </Paper>
   );
 }
