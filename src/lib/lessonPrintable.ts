@@ -2,6 +2,7 @@ import type { PlanDeck, WarmUpWord } from '@/types/lessonPlan';
 
 import { furiganaFromReading, parseFurigana } from './furigana';
 import { type KanaLabelKey, orderKanaSets } from './kanaCurriculum';
+import { brandHeaderHtml, printDocumentHtml } from './printBrand';
 
 export type PrintableVariant = 'study' | 'quiz';
 
@@ -49,7 +50,8 @@ function wordCellHtml(word: string, reading: string): string {
   return marked ? furiganaToRubyHtml(marked) : escapeHtml(word);
 }
 
-// Black on white, no background floods: a school printer may have only grey toner.
+// No background floods: a school printer may have only grey toner. Colour
+// stays limited to thin lines, the heading accent, and the mascot art.
 export const PRINT_BASE_CSS = `
   * { box-sizing: border-box; }
   body {
@@ -62,13 +64,9 @@ export const PRINT_BASE_CSS = `
 `;
 
 const PAGE_CSS = `
-  ${PRINT_BASE_CSS}
   section.week { page-break-after: always; }
   section.warmup { page-break-after: always; }
-  section.week:last-child { page-break-after: auto; }
-  .week-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-  h1 { font-size: 1.15rem; margin: 0 0 4px; }
-  .nameline { font-size: 0.85rem; white-space: nowrap; }
+  section.week:last-of-type { page-break-after: auto; }
   .desc { font-size: 0.8rem; color: #555; margin: 0 0 10px; }
   table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
   th, td { border: 1px solid #bbb; padding: 6px 8px; text-align: left; vertical-align: top; font-size: 0.9rem; }
@@ -118,7 +116,7 @@ function warmUpSection(warmUp: WarmUpWord[], labels: PrintableLabels): string {
     .join('\n');
 
   return `<section class="warmup">
-  <h1>${escapeHtml(labels.warmUpTitle ?? '')}</h1>
+  ${brandHeaderHtml({ title: labels.warmUpTitle ?? '' })}
   <p class="desc">${escapeHtml(labels.warmUpHint ?? '')}</p>
   <table>
     <thead><tr><th></th><th>${escapeHtml(labels.word)}</th><th>${escapeHtml(labels.meaning)}</th><th>${escapeHtml(labels.deck ?? '')}</th></tr></thead>
@@ -149,7 +147,7 @@ function kanaSheetSection(setIds: string[], labels: PrintableLabels): string {
     .join('\n');
 
   return `<section class="kana">
-  <h1>${escapeHtml(labels.kanaTitle ?? '')}</h1>
+  ${brandHeaderHtml({ title: labels.kanaTitle ?? '' })}
   <p class="desc">${escapeHtml(labels.kanaHint ?? '')}</p>
   <table class="kana">
     <tbody>
@@ -173,11 +171,10 @@ function weekSection(
     .map((_, i) => (variant === 'study' ? studyRow(deck, i) : quizRow(deck, i)))
     .join('\n');
 
+  const nameLine = `${labels.name}：＿＿＿＿＿＿＿＿　${labels.date}：＿＿＿＿＿＿`;
+
   return `<section class="week">
-  <div class="week-head">
-    <h1>${escapeHtml(week.heading)}</h1>
-    <div class="nameline">${escapeHtml(labels.name)}：＿＿＿＿＿＿＿＿　${escapeHtml(labels.date)}：＿＿＿＿＿＿</div>
-  </div>
+  ${brandHeaderHtml({ title: week.heading, nameLine })}
   ${variant === 'study' && deck.description ? `<p class="desc">${escapeHtml(deck.description)}</p>` : ''}
   <table>
     <thead><tr>${header}</tr></thead>
@@ -209,20 +206,13 @@ export function buildLessonPrintableHtml(args: {
     .map((week) => weekSection(week, args.variant, args.labels))
     .join('\n');
 
-  return `<!doctype html>
-<html lang="${escapeHtml(args.locale)}">
-<head>
-<meta charset="utf-8">
-<title>${escapeHtml(args.title)}</title>
-<style>${PAGE_CSS}</style>
-</head>
-<body>
-${warmUp}
-${sections}
-${kana}
-<script>window.addEventListener('load', function () { window.print(); });</script>
-</body>
-</html>`;
+  return printDocumentHtml({
+    title: args.title,
+    locale: args.locale,
+    css: PAGE_CSS,
+    body: `${warmUp}\n${sections}\n${kana}`,
+    header: false,
+  });
 }
 
 // Safari only honours window.open inside the gesture handler, so a caller that

@@ -1895,6 +1895,13 @@
       "sheetsGroupEmpty": "No learners in this group yet.",
       "sheetsKanjiTitle": "Kanji writing sheet",
       "sheetsKanjiEmpty": "No words in this plan are written with kanji.",
+      "sheetsKanjiFurigana": "Furigana",
+      "sheetsKanjiStrokeOrder": "Stroke order",
+      "sheetsKanjiLoading": "Getting stroke order…",
+      "sheetsKanjiError": "The kanji sheet could not be made. Please try again.",
+      "sheetsKanjiStrokes": "{count, plural, one {# stroke} other {# strokes}}",
+      "sheetsKanjiWatch": "See it move:",
+      "sheetsKanjiCredit": "Stroke order: KanjiVG by Ulrich Apel (CC BY-SA 3.0)",
       "soundsLineTitle": "Sounds for this week · due {date}",
       "soundsSwitchLabel": "Hand out the sounds due {date}",
       "soundsShaky": "Some learners are still working on this row",
@@ -2669,6 +2676,7 @@
       "title": "Credits",
       "description": "Data and pictures that help Tangodachi work",
       "kanjidic": "Kanji readings come from <kanjidic>KANJIDIC2</kanjidic>, made by the <edrdg>Electronic Dictionary Research and Development Group</edrdg>, used under the <licence>Creative Commons Attribution-ShareAlike 4.0 licence</licence>.",
+      "kanjivg": "Kanji stroke order comes from <kanjivg>KanjiVG</kanjivg> by Ulrich Apel, used under the <licence>Creative Commons Attribution-ShareAlike 3.0 licence</licence>.",
       "unsplash": "Card pictures come from <unsplash>Unsplash</unsplash>, and photographers are credited on their pictures."
     }
   },

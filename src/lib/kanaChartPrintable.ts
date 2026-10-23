@@ -1,10 +1,7 @@
-import type { PlanDeck } from '@/types/lessonPlan';
-
-import { furiganaFromReading } from './furigana';
 import { buildKanaChart, CHART_DIRECTION, type ChartBlock } from './kanaChart';
 import { getSet, type KanaEntry, type KanaLabelKey, type KanaTrack } from './kanaCurriculum';
-import { escapeHtml, furiganaToRubyHtml, PRINT_BASE_CSS } from './lessonPrintable';
-import { isPureKana } from './reviewGames';
+import { escapeHtml } from './lessonPrintable';
+import { brandHeaderHtml, printDocumentHtml } from './printBrand';
 
 export type KanaSheetScript = KanaTrack | 'both';
 
@@ -25,18 +22,6 @@ export interface KanaSheetLabels {
   comboBlock: string;
   contextualBlock: string;
   contextual: Partial<Record<KanaLabelKey, string>>;
-}
-
-export interface KanjiSheetLabels {
-  title: string;
-  name: string;
-  date: string;
-  empty: string;
-}
-
-export interface KanjiSheetWeek {
-  heading: string;
-  deck: PlanDeck;
 }
 
 /** knownByKana counts learners who read that character, out of learnerCount. */
@@ -191,14 +176,10 @@ ${gridHtml(block, ((block.columns.length + 1) / units) * 100, renderCell)}
 }
 
 const GRID_CSS = `
-  ${PRINT_BASE_CSS}
   body { padding: 0; }
   .sheet { page-break-after: always; }
-  .sheet:last-child { page-break-after: auto; }
-  .sheet-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-  h1 { font-size: 1.1rem; margin: 0 0 2px; }
+  .sheet:last-of-type { page-break-after: auto; }
   h2 { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 3px; color: #444; }
-  .nameline { font-size: 0.78rem; white-space: nowrap; }
   .hint { font-size: 0.74rem; color: #555; margin: 0 0 8px; }
   section.block { margin-bottom: 9px; }
   table.grid { table-layout: fixed; border-collapse: collapse; margin-left: auto; }
@@ -216,29 +197,15 @@ const GRID_CSS = `
   .legend { font-size: 0.7rem; color: #555; margin: 6px 0 0; }
 `;
 
-function documentHtml(title: string, locale: string, css: string, body: string): string {
-  return `<!doctype html>
-<html lang="${escapeHtml(locale)}">
-<head>
-<meta charset="utf-8">
-<title>${escapeHtml(title)}</title>
-<style>${css}</style>
-</head>
-<body>
-${body}
-<script>window.addEventListener('load', function () { window.print(); });</script>
-</body>
-</html>`;
+export function documentHtml(title: string, locale: string, css: string, body: string): string {
+  return printDocumentHtml({ title, locale, css, body, header: false });
 }
 
 function sheetHead(title: string, labels: KanaSheetLabels): string {
-  const nameline = labels.name
-    ? `<div class="nameline">${escapeHtml(labels.name)}：＿＿＿＿＿＿　${escapeHtml(labels.date ?? '')}：＿＿＿＿</div>`
-    : '';
-  return `<div class="sheet-head">
-  <h1>${escapeHtml(title)}</h1>
-  ${nameline}
-</div>
+  const nameLine = labels.name
+    ? `${labels.name}：＿＿＿＿＿＿　${labels.date ?? ''}：＿＿＿＿`
+    : undefined;
+  return `${brandHeaderHtml({ title, nameLine })}
 ${labels.hint ? `<p class="hint">${escapeHtml(labels.hint)}</p>` : ''}`;
 }
 
@@ -303,69 +270,4 @@ ${body}
   });
 
   return documentHtml(labels.title, args.locale, GRID_CSS, sheets.join('\n'));
-}
-
-const KANJI_CSS = `
-  ${PRINT_BASE_CSS}
-  .sheet { page-break-after: always; }
-  .sheet:last-child { page-break-after: auto; }
-  .sheet-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-  h1 { font-size: 1.1rem; margin: 0 0 8px; }
-  .nameline { font-size: 0.8rem; white-space: nowrap; }
-  .empty { font-size: 0.85rem; color: #555; }
-  .card { border: 1px solid #333; padding: 6px 8px; margin-bottom: 8px; display: flex; gap: 12px; align-items: center; page-break-inside: avoid; }
-  .word { font-size: 1.9rem; line-height: 1.2; min-width: 4em; }
-  .word ruby rt { font-size: 0.32em; }
-  .gloss { flex: 1; font-size: 0.78rem; }
-  .gloss .reading { font-size: 0.95rem; }
-  .gloss .meaning { color: #555; }
-  .boxes { display: flex; gap: 4px; }
-  .boxes span { display: block; width: 16mm; height: 16mm; border: 1px solid #999; }
-`;
-
-function kanjiCardHtml(card: PlanDeck['cards'][number], boxes: number): string {
-  const marked = furiganaFromReading(card.word, card.reading);
-  const word = marked ? furiganaToRubyHtml(marked) : escapeHtml(card.word);
-  return `<div class="card">
-  <div class="word">${word}</div>
-  <div class="gloss">
-    <div class="reading">${escapeHtml(card.reading)}</div>
-    <div class="meaning">${escapeHtml(card.meaning)}</div>
-  </div>
-  <div class="boxes">${'<span></span>'.repeat(boxes)}</div>
-</div>`;
-}
-
-function kanjiCards(deck: PlanDeck): PlanDeck['cards'] {
-  return (deck.cards ?? []).filter((card) => card.word && !isPureKana(card.word));
-}
-
-const WRITING_BOXES = 3;
-
-/** No stroke order boxes: we have no stroke data. */
-export function buildKanjiSheetHtml(args: {
-  locale: string;
-  weeks: KanjiSheetWeek[];
-  labels: KanjiSheetLabels;
-}): string {
-  const { labels } = args;
-  const sheets = args.weeks
-    .map((week) => ({ week, cards: kanjiCards(week.deck) }))
-    .filter((entry) => entry.cards.length > 0)
-    .map(
-      ({ week, cards }) => `<div class="sheet">
-<div class="sheet-head">
-  <h1>${escapeHtml(week.heading)}</h1>
-  <div class="nameline">${escapeHtml(labels.name)}：＿＿＿＿＿＿　${escapeHtml(labels.date)}：＿＿＿＿</div>
-</div>
-${cards.map((card) => kanjiCardHtml(card, WRITING_BOXES)).join('\n')}
-</div>`,
-    );
-
-  const body =
-    sheets.length > 0
-      ? sheets.join('\n')
-      : `<div class="sheet"><h1>${escapeHtml(labels.title)}</h1><p class="empty">${escapeHtml(labels.empty)}</p></div>`;
-
-  return documentHtml(labels.title, args.locale, KANJI_CSS, body);
 }

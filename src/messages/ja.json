@@ -1895,6 +1895,13 @@
       "sheetsGroupEmpty": "このグループにはまだ学習者がいません。",
       "sheetsKanjiTitle": "漢字の練習シート",
       "sheetsKanjiEmpty": "この計画には漢字で書く語がありません。",
+      "sheetsKanjiFurigana": "ふりがな",
+      "sheetsKanjiStrokeOrder": "書き順",
+      "sheetsKanjiLoading": "書き順を読み込み中…",
+      "sheetsKanjiError": "漢字シートを作れませんでした。もう一度ためしてください。",
+      "sheetsKanjiStrokes": "{count}画",
+      "sheetsKanjiWatch": "書き順アニメ：",
+      "sheetsKanjiCredit": "書き順：KanjiVG（Ulrich Apel、CC BY-SA 3.0）",
       "soundsLineTitle": "こんしゅうの もじ・{date} まで",
       "soundsSwitchLabel": "{date} きげんの もじを わたす",
       "soundsShaky": "まだ れんしゅうちゅうの 人が います",
@@ -2660,6 +2667,7 @@
       "title": "クレジット",
       "description": "Tangodachiで使っているデータと写真",
       "kanjidic": "漢字の読みには、<edrdg>電子辞書研究開発グループ（EDRDG）</edrdg>の<kanjidic>KANJIDIC2</kanjidic>を<licence>クリエイティブ・コモンズ 表示 - 継承 4.0 ライセンス</licence>のもとで使っています。",
+      "kanjivg": "漢字の書き順は Ulrich Apel さんの <kanjivg>KanjiVG</kanjivg> を <licence>クリエイティブ・コモンズ 表示-継承 3.0</licence> ライセンスのもとで使っています。",
       "unsplash": "カードの写真は<unsplash>Unsplash</unsplash>のものです。撮影者の名前は写真に表示しています。"
     }
   },
