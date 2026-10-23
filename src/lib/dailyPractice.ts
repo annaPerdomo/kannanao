@@ -130,6 +130,7 @@ export interface DailyPlanInput {
   progress: CardProgress[];
   ttsReady: boolean;
   sentenceCount: number;
+  now?: Date;
 }
 
 function focusGoal(focus: FocusPick): GoalMode | null {
@@ -164,6 +165,7 @@ export function planDailyPractice({
   progress,
   ttsReady,
   sentenceCount,
+  now,
 }: DailyPlanInput): ChainLeg[] {
   const legs: ChainLeg[] = [];
   if (dueCount > 0 || kanaDue) legs.push({ step: 'review', mode: 'review' });
@@ -171,7 +173,7 @@ export function planDailyPractice({
   if (!focus) return legs;
 
   const goal = focusGoal(focus);
-  const session = pickMixedSessionCards(cards, progress);
+  const session = pickMixedSessionCards(cards, progress, now);
   const sessionIds = session.map((c) => c.id);
   const mixed = planMixedPractice({
     support: deckSupport(session, {

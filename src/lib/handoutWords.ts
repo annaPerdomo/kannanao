@@ -1,4 +1,5 @@
 import { type CardStrength, cardStrength } from '@/lib/cardStrength';
+import { START_EASE } from '@/lib/srs';
 import type { CardProgress } from '@/lib/supabase';
 import type { Flashcard } from '@/types/flashcard';
 
@@ -76,7 +77,7 @@ export function learnerWordInsights(
         lastReviewedAt: null,
         nextReviewAt: null,
         intervalDays: 0,
-        ease: 2.5,
+        ease: START_EASE,
         tricky: false,
       };
     }

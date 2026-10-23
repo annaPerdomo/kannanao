@@ -392,6 +392,25 @@ describe('planDailyPractice', () => {
     const legs = plan({ dueCount: 0, kanaRow: 'hira-ka', focus });
     expect(legs[0]).toEqual({ step: 'practice', mode: 'kana-journey', kanaSet: 'hira-ka' });
   });
+
+  it('threads `now` into the session pick, changing which card counts as due vs waiting', () => {
+    const wideCards = Array.from({ length: 13 }, (_, i) => card(`w${i}`));
+    const flipAt = new Date('2026-09-02T12:00:00Z');
+    const progress: CardProgress[] = wideCards.map((c, i) => ({
+      ...strong(c.id),
+      nextReviewAt: i === 0 ? flipAt.toISOString() : '2020-01-01T00:00:00Z',
+    }));
+    const dueNow = new Date(flipAt.getTime() + 1000);
+    const waitingNow = new Date(flipAt.getTime() - 1000);
+
+    const dueLegs = plan({ cards: wideCards, progress, now: dueNow });
+    const waitingLegs = plan({ cards: wideCards, progress, now: waitingNow });
+    const dueIds = dueLegs.find((l) => l.cardIds)?.cardIds ?? [];
+    const waitingIds = waitingLegs.find((l) => l.cardIds)?.cardIds ?? [];
+
+    expect(dueIds).toContain('w0');
+    expect(waitingIds).not.toContain('w0');
+  });
 });
 
 describe('estimates', () => {

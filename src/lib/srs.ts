@@ -5,6 +5,8 @@
 
 export const MIN_EASE = 1.3;
 export const MAX_EASE = 2.8;
+/** A card with no progress row starts here — `increment_card_progress`'s default. */
+export const START_EASE = 2.5;
 export const MAX_INTERVAL_DAYS = 60;
 /** A missed card comes back this soon — same session, minutes later. */
 export const WRONG_REVIEW_DELAY_MIN = 10;
