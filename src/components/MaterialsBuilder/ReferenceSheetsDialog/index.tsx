@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { LessonPlan } from '@/types/lessonPlan';
 
+import { BingoSection } from './BingoSection';
 import { FlashcardSheetSection } from './FlashcardSheetSection';
 import { KanaSheetSection } from './KanaSheetSection';
 import { KanjiSheetSection } from './KanjiSheetSection';
@@ -53,6 +54,7 @@ export function ReferenceSheetsDialog({
         <Typography variant="subtitle2">{t('sheetsPracticeHeading')}</Typography>
         <FlashcardSheetSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
         <WorksheetSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
+        <BingoSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
 
         <Divider />
 
