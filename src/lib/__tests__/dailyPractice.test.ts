@@ -14,6 +14,7 @@ import {
   pickFocusDeck,
   pickKanaRow,
   planDailyPractice,
+  planDailyPracticeDetailed,
   previewMinutes,
   readDailyRound,
 } from '@/lib/dailyPractice';
@@ -410,6 +411,41 @@ describe('planDailyPractice', () => {
 
     expect(dueIds).toContain('w0');
     expect(waitingIds).not.toContain('w0');
+  });
+});
+
+describe('planDailyPracticeDetailed', () => {
+  const cards = Array.from({ length: 12 }, (_, i) => card(`c${i}`));
+
+  it('offers the full mixed ladder fitDaily then trims, with legs matching the trimmed result', () => {
+    const progress = cards.map((c) => strong(c.id));
+    const input = {
+      dueCount: 5,
+      ttsReady: true,
+      progress,
+      cards,
+      focus: focusFor(deck('d1', { readingPractice: true }), assignment({ required_mode: 'quiz' })),
+      sentenceCount: 0,
+    };
+    const { legs, offered } = planDailyPracticeDetailed(input);
+    expect(legs).toEqual(planDailyPractice(input));
+    expect(offered.length).toBeGreaterThan(
+      legs.filter((leg) => leg.step !== 'review' && leg.mode !== 'quiz').length,
+    );
+    expect(offered.some((leg) => leg.mode === 'quiz')).toBe(false);
+  });
+
+  it('offers nothing when there is no focus deck', () => {
+    expect(
+      planDailyPracticeDetailed({
+        dueCount: 3,
+        focus: null,
+        cards,
+        progress: [],
+        ttsReady: false,
+        sentenceCount: 0,
+      }).offered,
+    ).toEqual([]);
   });
 });
 

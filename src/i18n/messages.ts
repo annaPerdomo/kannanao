@@ -142,3 +142,38 @@ export function landingMessagesFor(locale: Locale): LandingMessages {
 export function landingSeoFor(locale: Locale): Messages['Landing']['seo'] {
   return messagesFor(locale).Landing.seo;
 }
+
+export type DemoLabGroupMessages = {
+  handoutDetail: Pick<
+    Messages['Group']['handoutDetail'],
+    'strength' | 'seenOf' | 'strongCount' | 'trickyCount'
+  >;
+  goalPicker: Pick<Messages['Group']['goalPicker'], 'modes'>;
+};
+
+export type DemoLabMessages = LandingMessages & {
+  DemoLab: Messages['DemoLab'];
+  Group: DemoLabGroupMessages;
+};
+
+/** Reuses the landing's namespace set (same AppShell tree) plus `DemoLab` and
+ * only the `Group` subtrees DemoLab reads. */
+export function demoLabMessagesFor(locale: Locale): DemoLabMessages {
+  const landing = landingMessagesFor(locale);
+  const messages = messagesFor(locale);
+  return {
+    ...landing,
+    DemoLab: messages.DemoLab,
+    Group: {
+      handoutDetail: {
+        strength: messages.Group.handoutDetail.strength,
+        seenOf: messages.Group.handoutDetail.seenOf,
+        strongCount: messages.Group.handoutDetail.strongCount,
+        trickyCount: messages.Group.handoutDetail.trickyCount,
+      },
+      goalPicker: {
+        modes: messages.Group.goalPicker.modes,
+      },
+    },
+  };
+}

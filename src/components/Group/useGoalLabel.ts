@@ -2,10 +2,11 @@
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
-import { type GoalMode, isGoalMode, type MasteryCriteria } from '@/lib/assignmentMastery';
+import { isGoalMode, type MasteryCriteria } from '@/lib/assignmentMastery';
+import type { ChainMode } from '@/lib/practiceChain';
 
-/** Message key for a goal mode under Group.goalPicker.modes ('kotoba-bubble' → 'kotobaBubble'). */
-export function goalModeMessageKey(mode: GoalMode): string {
+/** Message key for a mode under Group.goalPicker.modes ('kotoba-bubble' → 'kotobaBubble'). */
+export function goalModeMessageKey(mode: ChainMode): string {
   return mode.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 }
 

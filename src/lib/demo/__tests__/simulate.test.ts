@@ -111,6 +111,12 @@ describe('whatIf', () => {
   it('throws when a miss was never asked by a writing leg that day', () => {
     expect(() => whatIf([], ['demo-card-does-not-exist'], NOW)).toThrow();
   });
+
+  it('plans tomorrow from the end of the sitting, so a one-day retry is still due', () => {
+    const sim = simulatePersona(personaByKey('maya'), NOW);
+    const result = whatIf(sim.progress, ['demo-card-getsuyoubi'], NOW, { personaKey: 'maya' });
+    expect(result.tomorrow.reviewCardIds).toContain('demo-card-getsuyoubi');
+  });
 });
 
 describe('determinism', () => {

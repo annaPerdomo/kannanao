@@ -1304,7 +1304,9 @@
         "quiz": "Quiz",
         "listen": "Listen",
         "reading": "Reading",
-        "kanjiMatch": "Kanji Pairs"
+        "kanjiMatch": "Kanji Pairs",
+        "endings": "Pick the Ending",
+        "kanaJourney": "Learn Kana"
       },
       "goalBoth": "{accuracy}% in {mode}",
       "goalAccuracyOnly": "{accuracy}%",
@@ -5810,6 +5812,54 @@
       "detail": {
         "subtitle": "A memory with {name} · {levelName}"
       }
+    }
+  },
+  "DemoLab": {
+    "title": "How practice works",
+    "subtitle": "Pick a learner, mark some words right or wrong, and watch tomorrow's practice change — powered by the same planner the app uses every day.",
+    "loading": "Loading the lab…",
+    "personaPickerLabel": "Pick a learner",
+    "personas": {
+      "maya": "Studies most days, but keeps missing the weekend words.",
+      "ken": "Came back after a break — the review pile is bigger today to help catch up.",
+      "sora": "Brand new — every word today is a first meeting."
+    },
+    "todayHeading": "Today's practice",
+    "tomorrowHeading": "Tomorrow's practice",
+    "leftOut": "Left out to keep it short: {modes}",
+    "newBadge": "new",
+    "notInTomorrowsPlan": "Not in tomorrow's plan: {mode}",
+    "reviewWordsHeading": "Review words",
+    "sessionWordsHeading": "Practice words",
+    "finish": "Finish today's practice",
+    "finishNote": "A missed word is missed each time it comes up today.",
+    "startOver": "Start over",
+    "answerRight": "Right",
+    "answerWrong": "Missed it",
+    "wordAria": "Mark {word} right or wrong",
+    "changedHeading": "What changed",
+    "changeLineRight": "{word}: right → next practice in {time} · {strength}",
+    "changeLineWrong": "{word}: missed → asked again before today's practice ends, then back in {time} · {strength}",
+    "missedNote": "If it isn't asked again, it comes back in {n} minutes.",
+    "time": {
+      "minute": "{value, plural, one {# minute} other {# minutes}}",
+      "hour": "{value, plural, one {# hour} other {# hours}}",
+      "day": "{value, plural, one {# day} other {# days}}"
+    },
+    "teacherHeading": "What the teacher sees",
+    "teacherHighlightUp": "Got trickier just now",
+    "teacherHighlightDown": "Less tricky now",
+    "reasons": {
+      "review": "{count, plural, one {# word} other {# words}} due today",
+      "reviewCapRaised": "{count, plural, one {# word} other {# words}} due today — review goes up to {cap} when there's a lot to catch up on",
+      "kana": "A new row of kana is ready to learn",
+      "newWords": "{count, plural, one {# new word to meet} other {# new words to meet}}",
+      "recall": "{count, plural, one {# word} other {# words}} to recall from memory",
+      "strongWords": "{count, plural, one {# word} other {# words}} strong enough for a full sentence or fill-in-the-blank",
+      "sentences": "At least {min} example sentences are ready to build from",
+      "endings": "{count, plural, one {# word} other {# words}} practicing verb and adjective endings",
+      "assignment": "Today's goal from the teacher",
+      "practice": "More practice to keep these words fresh"
     }
   }
 }

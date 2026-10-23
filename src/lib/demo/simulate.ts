@@ -1,5 +1,10 @@
 import { type CardStrength, cardStrength } from '@/lib/cardStrength';
-import { dailyReviewCap, daysSince, pickFocusDeck, planDailyPractice } from '@/lib/dailyPractice';
+import {
+  dailyReviewCap,
+  daysSince,
+  pickFocusDeck,
+  planDailyPracticeDetailed,
+} from '@/lib/dailyPractice';
 import { type DueRow, rankDueCards } from '@/lib/dueOrder';
 import { endingItems } from '@/lib/grammarEndings';
 import { isTricky, type WordProgressRow } from '@/lib/handoutWords';
@@ -35,11 +40,14 @@ export const PROGRESS_WRITES = {
 
 export interface DemoDayPlan {
   date: string;
+  /** ISO instant this day was planned — `explainPlan` reads it instead of guessing a time of day. */
+  now: string;
   daysAway: number | null;
   dueCount: number;
   reviewCap: number;
   reviewCardIds: string[];
   plan: ChainLeg[];
+  offered: ChainLeg[];
   sessionCardIds: string[];
 }
 
@@ -73,7 +81,7 @@ export function planForDay(
     .map((card) => card.id);
 
   const focus = pickFocusDeck([demoAssignment(now)], [DEMO_DECK], date);
-  const plan = planDailyPractice({
+  const { legs: plan, offered } = planDailyPracticeDetailed({
     dueCount,
     focus,
     cards: DEMO_CARDS,
@@ -87,7 +95,17 @@ export function planForDay(
     ...new Set(plan.flatMap((leg) => (leg.step !== 'review' ? (leg.cardIds ?? []) : []))),
   ];
 
-  return { date, daysAway, dueCount, reviewCap, reviewCardIds, plan, sessionCardIds };
+  return {
+    date,
+    now: now.toISOString(),
+    daysAway,
+    dueCount,
+    reviewCap,
+    reviewCardIds,
+    plan,
+    offered,
+    sessionCardIds,
+  };
 }
 
 export interface DemoAnswerInput {
@@ -210,6 +228,7 @@ function playSitting(
   answers: DemoAnswerInput[];
   changes: DemoCardChange[];
   progress: CardProgress[];
+  lastAnsweredAt: Date;
 } {
   const dayPlan = planForDay(progress, at, opts);
   const askedIds = new Set<string>();
@@ -238,7 +257,9 @@ function playSitting(
   }
 
   const { progress: nextProgress, changes } = applyAnswers(progress, answers, at);
-  return { dayPlan, answers, changes, progress: nextProgress };
+  const lastAnsweredAt =
+    answers.length > 0 ? new Date(at.getTime() + (answers.length - 1) * SITTING_GAP_MS) : at;
+  return { dayPlan, answers, changes, progress: nextProgress, lastAnsweredAt };
 }
 
 export interface DemoDayLog extends DemoDayPlan {
@@ -291,8 +312,11 @@ export function whatIf(
     dayPlan,
     changes,
     progress: nextProgress,
+    lastAnsweredAt,
   } = playSitting(progress, now, misses, opts.personaKey ?? 'whatif', { ttsReady: opts.ttsReady });
-  const tomorrow = planForDay(nextProgress, new Date(now.getTime() + DAY_MS), {
+  // Uses lastAnsweredAt, not `now`: a retry lands seconds later, so `now + 1
+  // day` can fall just short of a card's one-day-out review and miss it.
+  const tomorrow = planForDay(nextProgress, new Date(lastAnsweredAt.getTime() + DAY_MS), {
     ttsReady: opts.ttsReady,
   });
   return { changes, progress: nextProgress, today: dayPlan, tomorrow };
