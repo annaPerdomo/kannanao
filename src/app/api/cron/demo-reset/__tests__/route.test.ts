@@ -1,7 +1,9 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { FAKE_DOMAIN } from '@/app/api/_lib/profile-actions';
 import { demoUuid } from '@/lib/demo/identity';
+import { buildDemoSeed } from '@/lib/demo/seed';
 
 interface FilterCall {
   method: string;
@@ -32,13 +34,11 @@ const { calls, createUser, updateUserById, getUserById, listUsers, resetCalls, c
 
     const config: {
       existingProfiles: Map<string, string>;
-      authMarkers: Map<string, boolean>;
       groupCreatedAt: string | null;
       failTable: string | null;
       failOp: string | null;
     } = {
       existingProfiles: new Map(),
-      authMarkers: new Map(),
       groupCreatedAt: null,
       failTable: null,
       failOp: null,
@@ -138,12 +138,24 @@ function request(authorization?: string) {
   });
 }
 
+/** createUser results (first run) ∪ existing demo ids ∪ the one demo deck id — the
+ * only values any wipe/insert filter may ever carry. */
+function allowedDemoIds(): Set<string> {
+  const seed = buildDemoSeed(NOW);
+  const usernames = [seed.organizer.username, ...seed.learners.map((l) => l.username)];
+  const createdIds = usernames.map((u) => `auth-${u}@${FAKE_DOMAIN}`);
+  return new Set([...createdIds, ...config.existingProfiles.values(), demoUuid('demo-days')]);
+}
+
+function idsIn(str: string): string[] {
+  return [...str.matchAll(/\(([^)]*)\)/g)].flatMap((m) => m[1].split(',').filter(Boolean));
+}
+
 describe('GET /api/cron/demo-reset', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetCalls();
     config.existingProfiles.clear();
-    config.authMarkers.clear();
     config.groupCreatedAt = null;
     config.failTable = null;
     config.failOp = null;
@@ -184,23 +196,43 @@ describe('GET /api/cron/demo-reset', () => {
       expect(json.cards).toBeGreaterThan(0);
     });
 
-    it('filters every delete/update to a demo id, every in() non-empty', async () => {
+    it('every delete/update/upsert filter value is a demo id or the demo deck id', async () => {
       await GET(request(`Bearer ${SECRET}`));
+      const allowed = allowedDemoIds();
 
-      const mutating = calls.filter((c) => c.op === 'delete' || c.op === 'update');
+      const mutating = calls.filter(
+        (c) => c.op === 'delete' || c.op === 'update' || c.op === 'upsert',
+      );
       expect(mutating.length).toBeGreaterThan(0);
+
+      let filterCount = 0;
       for (const call of mutating) {
-        const filterCall = call.filters.find(
-          (f) => f.method === 'eq' || f.method === 'in' || f.method === 'or',
-        );
-        expect(filterCall, `${call.table}:${call.op} has no eq/in/or filter`).toBeTruthy();
-        if (filterCall?.method === 'in') {
-          expect(
-            (filterCall.args[1] as unknown[]).length,
-            `${call.table}:${call.op} has an empty in()`,
-          ).toBeGreaterThan(0);
+        for (const f of call.filters) {
+          if (f.method === 'eq' && typeof f.args[1] === 'string') {
+            filterCount++;
+            expect(
+              allowed.has(f.args[1] as string),
+              `${call.table}:${call.op} eq ${f.args[0]}=${f.args[1]}`,
+            ).toBe(true);
+          } else if (f.method === 'in') {
+            const arr = f.args[1] as unknown[];
+            expect(arr.length, `${call.table}:${call.op} has an empty in()`).toBeGreaterThan(0);
+            for (const v of arr) {
+              filterCount++;
+              expect(allowed.has(v as string), `${call.table}:${call.op} in() element ${v}`).toBe(
+                true,
+              );
+            }
+          } else if (f.method === 'or') {
+            for (const id of idsIn(f.args[0] as string)) {
+              filterCount++;
+              expect(allowed.has(id), `${call.table}:${call.op} or() id ${id}`).toBe(true);
+            }
+          }
         }
       }
+      // Guards against the loop above vacuously passing on zero filters found.
+      expect(filterCount).toBeGreaterThan(0);
     });
 
     it('seeds every card_progress row with a demoUuid card id, count matching the seed', async () => {

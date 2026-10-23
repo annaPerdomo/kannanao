@@ -70,13 +70,10 @@ export async function handleProfileAction(
   const { action } = body;
 
   // Demo accounts share a public password reset nightly; letting them drift would break the reset.
+  // Checked against the verified auth user's app_metadata, not the editable profiles.username.
   if (action === 'changePassword' || action === 'changeUsername') {
-    const { data: current } = await serviceClient
-      .from('profiles')
-      .select('username')
-      .eq('id', userId)
-      .maybeSingle();
-    if (isDemoUsername(current?.username)) {
+    const { data } = await serviceClient.auth.admin.getUserById(userId);
+    if (data?.user?.app_metadata?.demo === true) {
       return NextResponse.json(
         { error: "Demo accounts can't change their username or password." },
         { status: 403 },

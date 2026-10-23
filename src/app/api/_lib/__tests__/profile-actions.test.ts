@@ -67,11 +67,12 @@ describe('authenticateUser', () => {
 describe('handleProfileAction: changeUsername', () => {
   it('rejects a demo- username as already taken, before touching auth', async () => {
     const updateUserById = vi.fn();
+    const getUserById = async () => ({ data: { user: { id: 'user-1', app_metadata: {} } } });
     const serviceClient = {
       from: () => ({
         select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }),
       }),
-      auth: { admin: { updateUserById } },
+      auth: { admin: { updateUserById, getUserById } },
     };
 
     const res = await handleProfileAction(serviceClient as never, 'user-1', {
@@ -85,15 +86,16 @@ describe('handleProfileAction: changeUsername', () => {
     expect(updateUserById).not.toHaveBeenCalled();
   });
 
-  it("refuses to change a demo account's own username", async () => {
+  it("refuses to change a demo account's own username, checked against app_metadata not the profile row", async () => {
     const updateUserById = vi.fn();
+    const getUserById = async () => ({
+      data: { user: { id: 'demo-user-1', app_metadata: { demo: true } } },
+    });
     const serviceClient = {
       from: () => ({
-        select: () => ({
-          eq: () => ({ maybeSingle: async () => ({ data: { username: 'demo-maya' } }) }),
-        }),
+        select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }),
       }),
-      auth: { admin: { updateUserById } },
+      auth: { admin: { updateUserById, getUserById } },
     };
 
     const res = await handleProfileAction(serviceClient as never, 'demo-user-1', {
@@ -109,14 +111,10 @@ describe('handleProfileAction: changeUsername', () => {
 describe('handleProfileAction: changePassword', () => {
   it("refuses to change a demo account's own password", async () => {
     const updateUserById = vi.fn();
-    const serviceClient = {
-      from: () => ({
-        select: () => ({
-          eq: () => ({ maybeSingle: async () => ({ data: { username: 'demo-maya' } }) }),
-        }),
-      }),
-      auth: { admin: { updateUserById } },
-    };
+    const getUserById = async () => ({
+      data: { user: { id: 'demo-user-1', app_metadata: { demo: true } } },
+    });
+    const serviceClient = { auth: { admin: { updateUserById, getUserById } } };
 
     const res = await handleProfileAction(serviceClient as never, 'demo-user-1', {
       action: 'changePassword',
@@ -125,5 +123,21 @@ describe('handleProfileAction: changePassword', () => {
 
     expect(res.status).toBe(403);
     expect(updateUserById).not.toHaveBeenCalled();
+  });
+
+  it('allows a real account to change its password', async () => {
+    const updateUserById = vi.fn().mockResolvedValue({ error: null });
+    const getUserById = async () => ({
+      data: { user: { id: 'user-1', app_metadata: {} } },
+    });
+    const serviceClient = { auth: { admin: { updateUserById, getUserById } } };
+
+    const res = await handleProfileAction(serviceClient as never, 'user-1', {
+      action: 'changePassword',
+      password: 'newpassword123',
+    });
+
+    expect(res.status).toBe(200);
+    expect(updateUserById).toHaveBeenCalledWith('user-1', { password: 'newpassword123' });
   });
 });

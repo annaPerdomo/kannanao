@@ -28,6 +28,7 @@ describe('POST /api/generate — demo account guard', () => {
     requireOrganizerAccountMock.mockResolvedValue({
       id: 'org1',
       username: 'demo-teacher',
+      isDemo: true,
       account_type: 'organizer',
     });
     const res = await POST(makeRequest());

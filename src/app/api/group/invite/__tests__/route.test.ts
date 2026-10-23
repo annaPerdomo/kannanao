@@ -36,6 +36,7 @@ describe('POST /api/group/invite — demo organizer guard', () => {
     requireOrganizerAccountMock.mockResolvedValue({
       id: 'org1',
       username: 'demo-teacher',
+      isDemo: true,
       account_type: 'organizer',
     });
     const res = await POST(makeRequest());

@@ -32,6 +32,14 @@ export async function checkInvite(sb: SupabaseClient, code: string): Promise<Inv
   if (error || !invite) {
     return { ok: false, code: 'invalidCode', reason: 'Invalid invite code.', status: 404 };
   }
+
+  // A demo organizer's invite must not let a real person into the demo group,
+  // which resets nightly. Reject it the same way as a code that doesn't exist.
+  const { data: organizerAuth } = await sb.auth.admin.getUserById(invite.organizer_id);
+  if (organizerAuth?.user?.app_metadata?.demo === true) {
+    return { ok: false, code: 'invalidCode', reason: 'Invalid invite code.', status: 404 };
+  }
+
   if (invite.expires_at && new Date(invite.expires_at) < new Date()) {
     return {
       ok: false,

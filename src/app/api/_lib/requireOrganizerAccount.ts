@@ -8,6 +8,8 @@ export interface OrganizerProfile {
   username: string;
   account_type: string;
   display_name: string | null;
+  /** From the verified JWT's app_metadata, not the editable profile row. */
+  isDemo?: boolean;
 }
 
 /**
@@ -51,5 +53,8 @@ export async function requireOrganizerAccount(
     );
   }
 
-  return profile.value as OrganizerProfile;
+  return {
+    ...profile.value,
+    isDemo: user.value.app_metadata?.demo === true,
+  } as OrganizerProfile;
 }

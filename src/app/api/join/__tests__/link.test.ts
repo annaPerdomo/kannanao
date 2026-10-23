@@ -32,6 +32,7 @@ function setTable(table: string, data: unknown, error: unknown = null) {
 }
 
 const calls: { table: string; method: string; args: unknown[] }[] = [];
+let organizerIsDemo = false;
 
 /**
  * Thenable query chain: every builder method returns itself, awaiting resolves.
@@ -71,7 +72,16 @@ function makeChain(table: string) {
 }
 
 vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
-  getServiceSupabase: () => ({ from: (table: string) => makeChain(table) }),
+  getServiceSupabase: () => ({
+    from: (table: string) => makeChain(table),
+    auth: {
+      admin: {
+        getUserById: vi.fn(async () => ({
+          data: { user: { app_metadata: organizerIsDemo ? { demo: true } : {} } },
+        })),
+      },
+    },
+  }),
 }));
 
 const { POST } = await import('@/app/api/join/link/route');
@@ -119,6 +129,7 @@ function membershipUpsert() {
 beforeEach(() => {
   _resetStore();
   calls.length = 0;
+  organizerIsDemo = false;
   for (const key of Object.keys(tableData)) delete tableData[key];
   Object.assign(authUser, {
     id: 'user1',
@@ -334,5 +345,15 @@ describe('POST /api/join/link', () => {
     const res = await POST(makeRequest({}));
 
     expect(res.status).toBe(400);
+  });
+
+  it("rejects a demo organizer's invite like an invalid code", async () => {
+    organizerIsDemo = true;
+
+    const res = await POST(makeRequest());
+
+    expect(res.status).toBe(404);
+    await expect(res.json()).resolves.toMatchObject({ code: 'invalidCode' });
+    expect(profileUpdate()).toBeUndefined();
   });
 });
