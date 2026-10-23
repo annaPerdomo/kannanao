@@ -22,6 +22,7 @@
     "db:backup:storage": "node ops/backup/backup-storage.mjs",
     "db:backup:size": "node ops/backup/backup-storage.mjs --manifest-only",
     "db:restore": "bash ops/backup/restore-db.sh",
+    "srs:vectors": "node ops/srs-vectors.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
