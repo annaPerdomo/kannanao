@@ -6,17 +6,12 @@ import {
 import type { Flashcard } from '@/types/flashcard';
 import type { PlanDeck } from '@/types/lessonPlan';
 
-export function handoutPrintHtml(args: {
-  title: string;
-  heading: string;
-  locale: string;
-  variant: PrintableVariant;
+export function handoutPlanDeck(args: {
   deckName: string;
   emoji: string | null;
   cards: Flashcard[];
-  labels: PrintableLabels;
-}): string {
-  const deck: PlanDeck = {
+}): PlanDeck {
+  return {
     name: args.deckName,
     description: '',
     emoji: args.emoji ?? '',
@@ -28,8 +23,22 @@ export function handoutPrintHtml(args: {
       exampleJp: c.example_jp,
       exampleEn: c.example_en,
       jlptLevel: c.jlptLevel ?? null,
+      imageUrl: c.imageUrl ?? null,
     })),
   };
+}
+
+export function handoutPrintHtml(args: {
+  title: string;
+  heading: string;
+  locale: string;
+  variant: PrintableVariant;
+  deckName: string;
+  emoji: string | null;
+  cards: Flashcard[];
+  labels: PrintableLabels;
+}): string {
+  const deck = handoutPlanDeck(args);
   return buildLessonPrintableHtml({
     title: args.title,
     locale: args.locale,
