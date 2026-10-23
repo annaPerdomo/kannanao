@@ -3,12 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
   buildGroupKanaChartHtml,
   buildKanaChartPrintableHtml,
-  buildKanjiSheetHtml,
   type GroupKanaCoverage,
   type KanaSheetLabels,
   type KanaSheetScript,
 } from '@/lib/kanaChartPrintable';
-import type { PlanDeck } from '@/types/lessonPlan';
 
 const LABELS: KanaSheetLabels = {
   title: 'Kana chart',
@@ -243,65 +241,5 @@ describe('buildGroupKanaChartHtml', () => {
 
     expect(doc.querySelector('.legend')?.textContent).toContain('4 learners');
     expect(doc.body.textContent).not.toContain('/4 ');
-  });
-});
-
-const KANJI_LABELS = {
-  title: 'Kanji writing sheet',
-  name: 'Name',
-  date: 'Date',
-  empty: 'No words in this plan are written with kanji.',
-};
-
-function deck(cards: PlanDeck['cards']): PlanDeck {
-  return { name: 'Week one', description: '', emoji: '📘', mainViewMode: 'kanji', cards };
-}
-
-function card(word: string, reading: string, meaning: string): PlanDeck['cards'][number] {
-  return { word, reading, meaning, exampleJp: '', exampleEn: '', jlptLevel: 'N5' };
-}
-
-function kanjiSheet(weeks: { heading: string; deck: PlanDeck }[]): Document {
-  return parse(buildKanjiSheetHtml({ locale: 'en', weeks, labels: KANJI_LABELS }));
-}
-
-describe('buildKanjiSheetHtml', () => {
-  it('skips words with no kanji and rubies the ones that have some', () => {
-    const doc = kanjiSheet([
-      {
-        heading: 'Week 1',
-        deck: deck([
-          card('寿司', 'すし', 'sushi'),
-          card('すし', 'すし', 'sushi'),
-          card('コーヒー', 'こーひー', 'coffee'),
-          card('食べる', 'たべる', 'to eat'),
-        ]),
-      },
-    ]);
-    const cards = [...doc.querySelectorAll('.card')];
-
-    expect(cards.map((el) => el.querySelector('.word')?.textContent)).toEqual([
-      '寿司すし',
-      '食たべる',
-    ]);
-    expect(cards[1].querySelector('.word ruby rt')?.textContent).toBe('た');
-    expect(cards[0].querySelectorAll('.boxes span')).toHaveLength(3);
-    expect(cards[0].querySelector('.meaning')?.textContent).toBe('sushi');
-  });
-
-  it('gives each week its own page and skips a week with no kanji at all', () => {
-    const doc = kanjiSheet([
-      { heading: 'Week 1', deck: deck([card('寿司', 'すし', 'sushi')]) },
-      { heading: 'Week 2', deck: deck([card('すし', 'すし', 'sushi')]) },
-    ]);
-
-    expect([...doc.querySelectorAll('.sheet h1')].map((h) => h.textContent)).toEqual(['Week 1']);
-  });
-
-  it('says so rather than printing an empty page when the plan has no kanji', () => {
-    const doc = kanjiSheet([{ heading: 'Week 1', deck: deck([card('すし', 'すし', 'sushi')]) }]);
-
-    expect(doc.querySelectorAll('.card')).toHaveLength(0);
-    expect(doc.querySelector('.empty')?.textContent).toBe(KANJI_LABELS.empty);
   });
 });

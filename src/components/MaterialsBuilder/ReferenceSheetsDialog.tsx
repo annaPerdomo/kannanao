@@ -10,7 +10,7 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import Stack from '@mui/material/Stack';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { DataErrorState } from '@/components/DataErrorState';
 import { StyledDialog } from '@/components/StyledDialog';
@@ -19,15 +19,15 @@ import { type DataError, toDataError } from '@/lib/dataError';
 import {
   buildGroupKanaChartHtml,
   buildKanaChartPrintableHtml,
-  buildKanjiSheetHtml,
   type GroupKanaCoverage,
   type KanaSheetLabels,
   type KanaSheetScript,
 } from '@/lib/kanaChartPrintable';
-import { includedPlan } from '@/lib/lessonPlanEdits';
 import { openBlankPrintWindow, openPrintWindow, writePrintWindow } from '@/lib/lessonPrintable';
 import { sb } from '@/lib/supabase';
 import type { LessonPlan } from '@/types/lessonPlan';
+
+import { KanjiSheetSection } from './KanjiSheetSection';
 
 interface ReferenceSheetsDialogProps {
   open: boolean;
@@ -78,8 +78,6 @@ export function ReferenceSheetsDialog({
     setGroupEmpty(false);
     setPopupBlocked(false);
   }, [open]);
-
-  const hasKanjiSource = useMemo(() => includedPlan(plan).decks.length > 0, [plan]);
 
   const sheetLabels = useCallback(
     (title: string, hint: string): KanaSheetLabels => ({
@@ -159,27 +157,6 @@ export function ReferenceSheetsDialog({
     })();
   }, [groupId, locale, script, sheetLabels, t, tJourney]);
 
-  const printKanji = useCallback(() => {
-    const kept = includedPlan(plan);
-    setPopupBlocked(
-      !openPrintWindow(
-        buildKanjiSheetHtml({
-          locale,
-          weeks: kept.decks.map((deck, i) => ({
-            heading: `${t('weekHeading', { week: i + 1 })} — ${deck.name}`,
-            deck,
-          })),
-          labels: {
-            title: t('sheetsKanjiTitle'),
-            name: t('printNameLabel'),
-            date: t('printDateLabel'),
-            empty: t('sheetsKanjiEmpty'),
-          },
-        }),
-      ),
-    );
-  }, [locale, plan, t]);
-
   return (
     <StyledDialog
       open={open}
@@ -257,9 +234,7 @@ export function ReferenceSheetsDialog({
                 {loadingGroup ? t('sheetsGroupLoading') : t('sheetsGroupButton')}
               </Button>
             )}
-            <Button variant="outlined" onClick={printKanji} disabled={!hasKanjiSource}>
-              {t('sheetsKanjiButton')}
-            </Button>
+            <KanjiSheetSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
           </Stack>
         </Stack>
       </Stack>
