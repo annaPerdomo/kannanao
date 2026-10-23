@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { frontHtml, frontText, printableDecks, safeImageUrl } from '@/lib/printPlan';
+import {
+  frontHtml,
+  frontText,
+  hashSeed,
+  printableDecks,
+  safeImageUrl,
+  seededShuffle,
+  shuffleAvoidingIdentity,
+} from '@/lib/printPlan';
 import type { LessonPlan, PlanCard, PlanDeck } from '@/types/lessonPlan';
 
 function card(overrides: Partial<PlanCard> = {}): PlanCard {
@@ -125,5 +133,71 @@ describe('safeImageUrl', () => {
 
   it('rejects garbage input', () => {
     expect(safeImageUrl('not a url')).toBeNull();
+  });
+});
+
+describe('hashSeed', () => {
+  it('returns different hashes for different strings', () => {
+    expect(hashSeed('a')).not.toBe(hashSeed('b'));
+  });
+
+  it('is stable for the same string', () => {
+    expect(hashSeed('week one:match')).toBe(hashSeed('week one:match'));
+  });
+});
+
+describe('seededShuffle', () => {
+  const items = Array.from({ length: 8 }, (_, i) => i);
+
+  it('returns the same order for the same seed', () => {
+    expect(seededShuffle(items, 42)).toEqual(seededShuffle(items, 42));
+  });
+
+  it('returns a different order for a different seed', () => {
+    expect(seededShuffle(items, 1)).not.toEqual(seededShuffle(items, 2));
+  });
+
+  it('does not mutate the input', () => {
+    const before = [...items];
+    seededShuffle(items, 42);
+    expect(items).toEqual(before);
+  });
+
+  it('returns a permutation of the input', () => {
+    const shuffled = seededShuffle(items, 42);
+    expect([...shuffled].sort((a, b) => a - b)).toEqual(items);
+  });
+});
+
+describe('shuffleAvoidingIdentity', () => {
+  function findIdentitySeed(items: readonly string[]): number {
+    for (let seed = 0; seed < 10_000; seed++) {
+      if (seededShuffle(items, seed).join() === items.join()) return seed;
+    }
+    throw new Error('no identity seed found in range');
+  }
+
+  it('rotates by one when the underlying shuffle would return the input order', () => {
+    const items = ['a', 'b'];
+    const seed = findIdentitySeed(items);
+    expect(seededShuffle(items, seed)).toEqual(items);
+    expect(shuffleAvoidingIdentity(items, seed)).toEqual(['b', 'a']);
+  });
+
+  it('matches seededShuffle when that is not the identity order', () => {
+    const items = ['a', 'b', 'c'];
+    const seed = 42;
+    expect(seededShuffle(items, seed)).not.toEqual(items);
+    expect(shuffleAvoidingIdentity(items, seed)).toEqual(seededShuffle(items, seed));
+  });
+
+  it('never rotates a single-item list', () => {
+    expect(shuffleAvoidingIdentity(['a'], 0)).toEqual(['a']);
+  });
+
+  it('returns a permutation of the input', () => {
+    const numbers = Array.from({ length: 8 }, (_, i) => i);
+    const shuffled = shuffleAvoidingIdentity(numbers, 7);
+    expect([...shuffled].sort((a, b) => a - b)).toEqual(numbers);
   });
 });

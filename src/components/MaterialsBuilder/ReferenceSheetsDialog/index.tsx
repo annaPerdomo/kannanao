@@ -12,6 +12,7 @@ import type { LessonPlan } from '@/types/lessonPlan';
 import { FlashcardSheetSection } from './FlashcardSheetSection';
 import { KanaSheetSection } from './KanaSheetSection';
 import { KanjiSheetSection } from './KanjiSheetSection';
+import { WorksheetSection } from './WorksheetSection';
 
 interface ReferenceSheetsDialogProps {
   open: boolean;
@@ -51,6 +52,7 @@ export function ReferenceSheetsDialog({
       <Stack spacing={2.5}>
         <Typography variant="subtitle2">{t('sheetsPracticeHeading')}</Typography>
         <FlashcardSheetSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
+        <WorksheetSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
 
         <Divider />
 
