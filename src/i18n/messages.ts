@@ -65,6 +65,7 @@ export const LANDING_NAMESPACES = [
   'Auth',
   'Common',
   'Deck',
+  'Errors',
   'FuriganaEditor',
   'Home',
   'Landing',

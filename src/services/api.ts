@@ -26,7 +26,10 @@ export async function generateFlashcards(payload: GeneratePayload): Promise<Gene
     headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`Generate failed: ${res.statusText}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? `Generate failed: ${res.statusText}`);
+  }
   return res.json();
 }
 
@@ -36,7 +39,10 @@ export async function formatFurigana(lines: string[]): Promise<string[]> {
     headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
     body: JSON.stringify({ lines }),
   });
-  if (!res.ok) throw new Error(`Furigana formatting failed: ${res.statusText}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error ?? `Furigana formatting failed: ${res.statusText}`);
+  }
   const data = await res.json();
   return data.lines as string[];
 }

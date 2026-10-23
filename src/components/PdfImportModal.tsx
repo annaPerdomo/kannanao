@@ -8,6 +8,7 @@ import { useRef, useState } from 'react';
 import { Loading } from '@/components/Loading';
 import { DOCUMENT_MAX_BYTES } from '@/components/MaterialsBuilder/constants';
 import { StyledDialog } from '@/components/StyledDialog';
+import { DEMO_ACCOUNT_BLOCKED } from '@/lib/demo/identity';
 import { errorMessage } from '@/lib/errorMessage';
 import { sb } from '@/lib/supabase';
 import { uploadLessonDocument } from '@/services/api';
@@ -21,6 +22,7 @@ interface PdfImportModalProps {
 
 export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProps) {
   const t = useTranslations('Deck.pdfImportModal');
+  const tErrors = useTranslations('Errors');
   const EXTRACTED_FIELDS = t.raw('extractedFields') as string[];
   const { palette } = useTheme();
   const { brand, accent } = palette;
@@ -89,7 +91,13 @@ export function PdfImportModal({ open, onClose, onAddCards }: PdfImportModalProp
         body: JSON.stringify({ path }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? t('extractionFailedFallback'));
+      if (!response.ok) {
+        throw new Error(
+          data.error === DEMO_ACCOUNT_BLOCKED
+            ? tErrors('demoNoAi')
+            : (data.error ?? t('extractionFailedFallback')),
+        );
+      }
       cards = data as GeneratedCard[];
     } catch (err) {
       setError(errorMessage(err, t('extractFailedGeneric')));

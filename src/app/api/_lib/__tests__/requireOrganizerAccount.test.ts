@@ -135,4 +135,12 @@ describe('requireOrganizerAccount', () => {
     expect(result).not.toBeInstanceOf(NextResponse);
     expect(result).toEqual(profile);
   });
+
+  it('still returns a demo organizer profile — demo blocking is now the caller’s job (rejectDemo)', async () => {
+    const profile = { id: 'u1', username: 'demo-teacher', account_type: 'organizer' };
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+    mockSelectSingle.mockResolvedValue({ data: profile, error: null });
+    const result = await requireOrganizerAccount(makeRequest('valid-token'));
+    expect(result).toEqual(profile);
+  });
 });

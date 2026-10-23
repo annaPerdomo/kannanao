@@ -71,11 +71,11 @@ const { POST } = await import('@/app/api/join/route');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function makeRequest() {
+function makeRequest(username = 'newbie') {
   return new NextRequest('http://localhost/api/join', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-forwarded-for': '10.0.0.7' },
-    body: JSON.stringify({ code: 'ABC123', username: 'newbie', password: 'hunter2' }),
+    body: JSON.stringify({ code: 'ABC123', username, password: 'hunter2' }),
   });
 }
 
@@ -135,5 +135,14 @@ describe('POST /api/join', () => {
     expect(calls.filter((c) => c.table === 'invite_codes' && c.method === 'update')).toHaveLength(
       2,
     );
+  });
+
+  it('rejects a demo- username as already taken, before creating any auth user', async () => {
+    const res = await POST(makeRequest('demo-x'));
+    const json = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(json.error).toBe('Username is already taken.');
+    expect(calls.some((c) => c.table === 'profiles' && c.method === 'insert')).toBe(false);
   });
 });

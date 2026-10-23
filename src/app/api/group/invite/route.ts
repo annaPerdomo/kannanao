@@ -1,9 +1,11 @@
 import crypto from 'crypto';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { DEMO_NO_INVITES } from '@/lib/demo/identity';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
+import { rejectDemo } from '../../_lib/rejectDemo';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { getServiceSupabase } from '../_lib/serviceSupabase';
 
@@ -20,6 +22,9 @@ export async function POST(req: NextRequest) {
 
   const orgCheck = await requireOrganizerAccount(req);
   if (orgCheck instanceof NextResponse) return orgCheck;
+  // Real people must never land in the demo group — its password is public.
+  const demoCheck = rejectDemo(orgCheck, DEMO_NO_INVITES);
+  if (demoCheck) return demoCheck;
 
   const body = await req.json().catch(() => null);
   const label = typeof body?.label === 'string' ? body.label.trim().slice(0, 100) : null;

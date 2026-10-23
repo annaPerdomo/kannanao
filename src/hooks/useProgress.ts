@@ -11,6 +11,7 @@ import { CHEST_XP } from '@/lib/chest';
 import { cardXp } from '@/lib/flashcardUtils';
 import { publishSessionEnd } from '@/lib/sessionSignal';
 import { sb, upsertCardProgress } from '@/lib/supabase';
+import { levelFromXp, XP_PER_WRONG, xpForLevel } from '@/lib/xp';
 import type { JlptLevel } from '@/types/flashcard';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -79,23 +80,12 @@ export interface Achievement {
 
 // ─── XP / Level config ───────────────────────────────────────────────────────
 
+export { levelFromXp, XP_PER_WRONG, xpForLevel };
+
 /** XP awarded per correct answer */
 export const XP_PER_CORRECT = 10;
-/** XP awarded per wrong answer (participation points!) */
-export const XP_PER_WRONG = 2;
 /** XP bonus for a perfect session (100% correct, min 5 cards) */
 export const XP_PERFECT_BONUS = 50;
-/** XP needed to reach a given level: level * 200 */
-export const xpForLevel = (level: number) => level * 200;
-
-export function levelFromXp(xp: number): number {
-  let level = 1;
-  while (xp >= xpForLevel(level)) {
-    xp -= xpForLevel(level);
-    level++;
-  }
-  return level;
-}
 
 export function xpProgressInLevel(totalXp: number): { current: number; needed: number } {
   let xp = totalXp;

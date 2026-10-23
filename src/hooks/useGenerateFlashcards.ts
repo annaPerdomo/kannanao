@@ -2,6 +2,7 @@
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
+import { DEMO_ACCOUNT_BLOCKED } from '@/lib/demo/identity';
 import { generateFlashcards } from '@/services/api';
 import {
   type NewCard,
@@ -31,6 +32,7 @@ interface UseGenerateResult {
 
 export function useGenerateFlashcards(): UseGenerateResult {
   const t = useTranslations('Deck.useGenerateFlashcards');
+  const tErrors = useTranslations('Errors');
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,14 +58,19 @@ export function useGenerateFlashcards(): UseGenerateResult {
 
         return await reuseThenFetch(generated, deckId, mainViewMode, generateImages);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : t('generationFailed');
+        const msg =
+          err instanceof Error
+            ? err.message === DEMO_ACCOUNT_BLOCKED
+              ? tErrors('demoNoAi')
+              : err.message
+            : t('generationFailed');
         setError(msg);
         throw err;
       } finally {
         setGenerating(false);
       }
     },
-    [t],
+    [t, tErrors],
   );
 
   const generate = useCallback(

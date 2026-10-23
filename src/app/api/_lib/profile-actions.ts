@@ -1,6 +1,8 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
+import { isDemoUsername } from '@/lib/demo/identity';
+
 import { addMembership } from '../group/_lib/membership';
 import { getUserFromTokenResult } from './authCache';
 import { backendUnavailable } from './backendUnavailable';
@@ -67,6 +69,21 @@ export async function handleProfileAction(
 ): Promise<NextResponse> {
   const { action } = body;
 
+  // Demo accounts share a public password reset nightly; letting them drift would break the reset.
+  if (action === 'changePassword' || action === 'changeUsername') {
+    const { data: current } = await serviceClient
+      .from('profiles')
+      .select('username')
+      .eq('id', userId)
+      .maybeSingle();
+    if (isDemoUsername(current?.username)) {
+      return NextResponse.json(
+        { error: "Demo accounts can't change their username or password." },
+        { status: 403 },
+      );
+    }
+  }
+
   if (action === 'changePassword') {
     const password = body.password as string | undefined;
     if (!password || password.length < 6) {
@@ -96,7 +113,7 @@ export async function handleProfileAction(
       .select('id')
       .eq('username', normalised)
       .maybeSingle();
-    if (existing && existing.id !== userId) {
+    if ((existing && existing.id !== userId) || isDemoUsername(normalised)) {
       return NextResponse.json({ error: 'Username already taken.' }, { status: 409 });
     }
 

@@ -34,6 +34,7 @@ import { logger } from '@/lib/logger';
 import type { LessonPlan, WarmUpWord } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../_lib/rateLimit';
+import { rejectDemo } from '../../_lib/rejectDemo';
 import { type OrganizerProfile, requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { splitFuriganaSafe } from '../../_lib/splitFurigana';
 import { getGroupKnownKana } from '../_lib/groupKnownKana';
@@ -198,6 +199,8 @@ export async function POST(req: NextRequest) {
     if (access instanceof NextResponse) return access;
     organizer = access;
   }
+  const demoCheck = rejectDemo(organizer);
+  if (demoCheck) return demoCheck;
 
   const trimmedGoal = typeof goal === 'string' ? goal.trim() : '';
   if (trimmedGoal.length < GOAL_MIN || trimmedGoal.length > GOAL_MAX) {

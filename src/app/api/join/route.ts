@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { LOCALES } from '@/i18n/config';
 import { availabilityToday } from '@/lib/assignmentAvailability';
+import { isDemoUsername } from '@/lib/demo/identity';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
     .eq('username', lowerUsername)
     .single();
 
-  if (existing) {
+  if (existing || isDemoUsername(lowerUsername)) {
     await releaseClaim();
     return NextResponse.json({ error: 'Username is already taken.' }, { status: 409 });
   }

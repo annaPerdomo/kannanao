@@ -12,7 +12,7 @@ vi.mock('@/app/api/_lib/authCache', () => ({
 
 import { DataError } from '@/lib/dataError';
 
-import { authenticateUser } from '../profile-actions';
+import { authenticateUser, handleProfileAction } from '../profile-actions';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -61,5 +61,69 @@ describe('authenticateUser', () => {
     const result = await authenticateUser(makeRequest());
     expect('error' in result).toBe(true);
     if ('error' in result) expect(result.error.status).toBe(503);
+  });
+});
+
+describe('handleProfileAction: changeUsername', () => {
+  it('rejects a demo- username as already taken, before touching auth', async () => {
+    const updateUserById = vi.fn();
+    const serviceClient = {
+      from: () => ({
+        select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null }) }) }),
+      }),
+      auth: { admin: { updateUserById } },
+    };
+
+    const res = await handleProfileAction(serviceClient as never, 'user-1', {
+      action: 'changeUsername',
+      username: 'demo-x',
+    });
+
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.error).toBe('Username already taken.');
+    expect(updateUserById).not.toHaveBeenCalled();
+  });
+
+  it("refuses to change a demo account's own username", async () => {
+    const updateUserById = vi.fn();
+    const serviceClient = {
+      from: () => ({
+        select: () => ({
+          eq: () => ({ maybeSingle: async () => ({ data: { username: 'demo-maya' } }) }),
+        }),
+      }),
+      auth: { admin: { updateUserById } },
+    };
+
+    const res = await handleProfileAction(serviceClient as never, 'demo-user-1', {
+      action: 'changeUsername',
+      username: 'notdemo',
+    });
+
+    expect(res.status).toBe(403);
+    expect(updateUserById).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleProfileAction: changePassword', () => {
+  it("refuses to change a demo account's own password", async () => {
+    const updateUserById = vi.fn();
+    const serviceClient = {
+      from: () => ({
+        select: () => ({
+          eq: () => ({ maybeSingle: async () => ({ data: { username: 'demo-maya' } }) }),
+        }),
+      }),
+      auth: { admin: { updateUserById } },
+    };
+
+    const res = await handleProfileAction(serviceClient as never, 'demo-user-1', {
+      action: 'changePassword',
+      password: 'newpassword123',
+    });
+
+    expect(res.status).toBe(403);
+    expect(updateUserById).not.toHaveBeenCalled();
   });
 });

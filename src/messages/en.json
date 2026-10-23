@@ -5861,5 +5861,9 @@
       "assignment": "Today's goal from the teacher",
       "practice": "More practice to keep these words fresh"
     }
+  },
+  "Errors": {
+    "demoNoAi": "The demo account can't use AI tools. Sign up to try them.",
+    "demoNoInvites": "The demo account can't invite people. Sign up to make your own group."
   }
 }

@@ -11,6 +11,7 @@ import {
   peekApiCacheMeta,
 } from '@/lib/apiCache';
 import { type DataError, toDataError } from '@/lib/dataError';
+import { DEMO_NO_INVITES } from '@/lib/demo/identity';
 
 export interface InviteCode {
   id: string;
@@ -41,6 +42,7 @@ export function useInvites(groupId?: string | null) {
   const [error, setError] = useState<DataError | null>(null);
   const [stale, setStale] = useState(() => peekApiCacheMeta(url)?.stale ?? false);
   const t = useTranslations('Group.useInvites');
+  const tErrors = useTranslations('Errors');
 
   const headers = useCallback(() => {
     const h: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -90,14 +92,18 @@ export function useInvites(groupId?: string | null) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? t('createFailed'));
+        throw new Error(
+          data.error === DEMO_NO_INVITES
+            ? tErrors('demoNoInvites')
+            : (data.error ?? t('createFailed')),
+        );
       }
       const invite: InviteCode = await res.json();
       invalidateApiCache(INVITES_URL);
       setInvites((prev) => [invite, ...prev]);
       return invite;
     },
-    [headers, groupId, t],
+    [headers, groupId, t, tErrors],
   );
 
   const revokeInvite = useCallback(
