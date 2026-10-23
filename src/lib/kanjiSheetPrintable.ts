@@ -9,6 +9,7 @@ import {
   uniqueKanji,
 } from './kanjiStrokes';
 import { escapeHtml, furiganaToRubyHtml } from './lessonPrintable';
+import { WRITING_BOX_GUIDE, writingBoxSvg } from './printBoxes';
 import { brandHeaderHtml, printDocumentHtml } from './printBrand';
 
 export const PRACTICE_BOXES = 10;
@@ -79,13 +80,12 @@ function orderHtml(data: KanjiStrokes): string {
 }
 
 function practiceBoxSvg(kanji: string, data: KanjiStrokes | undefined, trace: boolean): string {
-  const guide = `<rect x="2" y="2" width="105" height="105" fill="none" stroke="#999" stroke-width="2"/><line x1="54.5" y1="2" x2="54.5" y2="107" stroke="#ccc" stroke-width="1" stroke-dasharray="4 4"/><line x1="2" y1="54.5" x2="107" y2="54.5" stroke="#ccc" stroke-width="1" stroke-dasharray="4 4"/>`;
-  const glyph = !trace
-    ? ''
-    : data
-      ? strokesSvg(data, { color: '#c8c8c8', doneColor: '#c8c8c8' })
-      : `<text x="54.5" y="88" font-size="86" text-anchor="middle" fill="#c8c8c8">${escapeHtml(kanji)}</text>`;
-  return `<svg viewBox="0 0 ${KANJIVG_VIEWBOX} ${KANJIVG_VIEWBOX}" class="practicebox" xmlns="http://www.w3.org/2000/svg">${guide}${glyph}</svg>`;
+  if (trace && data) {
+    const glyph = strokesSvg(data, { color: '#c8c8c8', doneColor: '#c8c8c8' });
+    return `<svg viewBox="0 0 ${KANJIVG_VIEWBOX} ${KANJIVG_VIEWBOX}" class="practicebox" xmlns="http://www.w3.org/2000/svg">${WRITING_BOX_GUIDE}${glyph}</svg>`;
+  }
+  const box = writingBoxSvg({ sizeMm: 16, trace: trace ? kanji : undefined });
+  return box.replace('<svg ', '<svg class="practicebox" ');
 }
 
 function practiceRowHtml(kanji: string, data: KanjiStrokes | undefined): string {
