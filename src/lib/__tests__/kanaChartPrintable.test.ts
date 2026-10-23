@@ -48,6 +48,28 @@ function rowGlyphs(table: HTMLTableElement, rowIndex: number): (string | null)[]
 }
 
 describe('buildKanaChartPrintableHtml', () => {
+  it('carries the brand wordmark', () => {
+    const html = buildKanaChartPrintableHtml({
+      locale: 'en',
+      options: { script: 'hiragana', romaji: true, blank: false },
+      labels: LABELS,
+    });
+    expect(html).toContain('logo-wordmark.png');
+  });
+
+  it('brands each sheet of a multi-track chart once, not the shell on top', () => {
+    const html = buildKanaChartPrintableHtml({
+      locale: 'en',
+      options: { script: 'both', romaji: true, blank: false, setIds: ['hira-ra', 'kata-a'] },
+      labels: LABELS,
+    });
+    const parsed = parse(html);
+
+    expect(parsed.querySelectorAll('.sheet')).toHaveLength(2);
+    expect(parsed.querySelectorAll('img[src="/mascot/head-happy.png"]')).toHaveLength(2);
+    expect(parsed.querySelectorAll('.brand-title')).toHaveLength(2);
+  });
+
   it('prints the gojūon columns ん → あ, matching the chart on screen', () => {
     const base = grids(sheet('hiragana'))[0];
 
@@ -180,8 +202,8 @@ describe('buildKanaChartPrintableHtml', () => {
       }),
     );
 
-    expect(bare.querySelector('.nameline')).toBeNull();
-    expect(sheet('hiragana').querySelector('.nameline')?.textContent).toContain('Name');
+    expect(bare.querySelector('.brand-nameline')).toBeNull();
+    expect(sheet('hiragana').querySelector('.brand-nameline')?.textContent).toContain('Name');
   });
 });
 
@@ -222,7 +244,7 @@ describe('buildGroupKanaChartHtml', () => {
 
     const both = groupSheet('both');
     expect(both.querySelectorAll('.sheet')).toHaveLength(2);
-    expect([...both.querySelectorAll('.sheet h1')].map((h) => h.textContent)).toEqual([
+    expect([...both.querySelectorAll('.sheet .brand-title')].map((h) => h.textContent)).toEqual([
       'Kana your group can read — Hiragana',
       'Kana your group can read — Katakana',
     ]);

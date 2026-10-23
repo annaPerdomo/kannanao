@@ -2,7 +2,8 @@ import { formatDate } from '@/components/Group/dueDate';
 import type { LessonUnit, LessonUnitWeek } from '@/types/lessonUnit';
 
 import { furiganaFromReading } from './furigana';
-import { escapeHtml, furiganaToRubyHtml, PRINT_BASE_CSS } from './lessonPrintable';
+import { escapeHtml, furiganaToRubyHtml } from './lessonPrintable';
+import { brandHeaderHtml, printDocumentHtml } from './printBrand';
 
 export interface UnitPlanWord {
   word: string;
@@ -20,11 +21,7 @@ export interface UnitPlanLabels {
 }
 
 const PAGE_CSS = `
-  ${PRINT_BASE_CSS}
-  header { margin-bottom: 18px; }
-  h1 { font-size: 1.3rem; margin: 0 0 4px; }
   h2 { font-size: 1.05rem; margin: 0 0 4px; }
-  .groupline { font-size: 0.85rem; color: #555; margin: 0; }
   .candos { margin-bottom: 20px; }
   .candos ul { margin: 4px 0 0; padding-left: 20px; }
   section.week { page-break-inside: avoid; margin-bottom: 22px; }
@@ -97,21 +94,14 @@ export function buildUnitPlanHtml(args: {
     .map((week) => weekSection(week, wordsByDeck[week.deckId] ?? [], labels, locale))
     .join('\n');
 
-  return `<!doctype html>
-<html lang="${escapeHtml(locale)}">
-<head>
-<meta charset="utf-8">
-<title>${escapeHtml(title)}</title>
-<style>${PAGE_CSS}</style>
-</head>
-<body>
-<header>
-  <h1>${escapeHtml(title)}</h1>
-  <p class="groupline">${escapeHtml(groupName)}${unit.level ? ` · ${escapeHtml(unit.level)}` : ''}</p>
-</header>
-${canDoBlock}
-${sections}
-<script>window.addEventListener('load', function () { window.print(); });</script>
-</body>
-</html>`;
+  const subtitle = `${groupName}${unit.level ? ` · ${unit.level}` : ''}`;
+  const header = brandHeaderHtml({ title, subtitle });
+
+  return printDocumentHtml({
+    title,
+    locale,
+    css: PAGE_CSS,
+    body: `${header}\n${canDoBlock}\n${sections}`,
+    header: false,
+  });
 }

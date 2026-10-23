@@ -1,6 +1,7 @@
 import { buildKanaChart, CHART_DIRECTION, type ChartBlock } from './kanaChart';
 import { getSet, type KanaEntry, type KanaLabelKey, type KanaTrack } from './kanaCurriculum';
-import { escapeHtml, PRINT_BASE_CSS } from './lessonPrintable';
+import { escapeHtml } from './lessonPrintable';
+import { brandHeaderHtml, printDocumentHtml } from './printBrand';
 
 export type KanaSheetScript = KanaTrack | 'both';
 
@@ -175,14 +176,10 @@ ${gridHtml(block, ((block.columns.length + 1) / units) * 100, renderCell)}
 }
 
 const GRID_CSS = `
-  ${PRINT_BASE_CSS}
   body { padding: 0; }
   .sheet { page-break-after: always; }
-  .sheet:last-child { page-break-after: auto; }
-  .sheet-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-  h1 { font-size: 1.1rem; margin: 0 0 2px; }
+  .sheet:last-of-type { page-break-after: auto; }
   h2 { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 3px; color: #444; }
-  .nameline { font-size: 0.78rem; white-space: nowrap; }
   .hint { font-size: 0.74rem; color: #555; margin: 0 0 8px; }
   section.block { margin-bottom: 9px; }
   table.grid { table-layout: fixed; border-collapse: collapse; margin-left: auto; }
@@ -201,28 +198,14 @@ const GRID_CSS = `
 `;
 
 export function documentHtml(title: string, locale: string, css: string, body: string): string {
-  return `<!doctype html>
-<html lang="${escapeHtml(locale)}">
-<head>
-<meta charset="utf-8">
-<title>${escapeHtml(title)}</title>
-<style>${css}</style>
-</head>
-<body>
-${body}
-<script>window.addEventListener('load', function () { window.print(); });</script>
-</body>
-</html>`;
+  return printDocumentHtml({ title, locale, css, body, header: false });
 }
 
 function sheetHead(title: string, labels: KanaSheetLabels): string {
-  const nameline = labels.name
-    ? `<div class="nameline">${escapeHtml(labels.name)}：＿＿＿＿＿＿　${escapeHtml(labels.date ?? '')}：＿＿＿＿</div>`
-    : '';
-  return `<div class="sheet-head">
-  <h1>${escapeHtml(title)}</h1>
-  ${nameline}
-</div>
+  const nameLine = labels.name
+    ? `${labels.name}：＿＿＿＿＿＿　${labels.date ?? ''}：＿＿＿＿`
+    : undefined;
+  return `${brandHeaderHtml({ title, nameLine })}
 ${labels.hint ? `<p class="hint">${escapeHtml(labels.hint)}</p>` : ''}`;
 }
 

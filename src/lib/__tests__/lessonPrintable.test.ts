@@ -68,6 +68,7 @@ describe('buildLessonPrintableHtml', () => {
     expect(html).toContain('I eat sushi');
     expect(html).toContain('Week 1 — Food words');
     expect(html).toContain('Ordering at a restaurant');
+    expect(html).toContain('logo-wordmark.png');
   });
 
   it('quiz sheets show the plain word and leave reading and meaning blank', () => {

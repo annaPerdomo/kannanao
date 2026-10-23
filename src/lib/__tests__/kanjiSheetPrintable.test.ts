@@ -52,6 +52,17 @@ function kanjiSheet(
 }
 
 describe('buildKanjiSheetHtml', () => {
+  it('carries the brand wordmark', () => {
+    const html = buildKanjiSheetHtml({
+      locale: 'en',
+      weeks: [{ heading: 'Week 1', deck: deck([card('食堂', 'しょくどう', 'cafeteria')]) }],
+      labels: KANJI_LABELS,
+      options: DEFAULT_OPTIONS,
+      strokes: new Map(),
+    });
+    expect(html).toContain('logo-wordmark.png');
+  });
+
   it('prints one kanji-row per kanji in a two-kanji word, each with exactly PRACTICE_BOXES boxes', () => {
     const strokes = new Map([
       ['食', strokesFor(9)],

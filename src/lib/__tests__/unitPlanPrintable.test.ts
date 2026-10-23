@@ -47,6 +47,18 @@ const LABELS: UnitPlanLabels = {
 };
 
 describe('buildUnitPlanHtml', () => {
+  it('carries the brand wordmark', () => {
+    const unit = makeUnit([makeWeek()]);
+    const html = buildUnitPlanHtml({
+      unit,
+      groupName: 'Section A',
+      wordsByDeck: {},
+      labels: LABELS,
+      locale: 'en',
+    });
+    expect(html).toContain('logo-wordmark.png');
+  });
+
   it('escapes a <script> tag in the unit title, a week note, and a word meaning', () => {
     const unit = makeUnit([makeWeek({ note: '<script>alert(1)</script>' })], {
       title: '<script>alert(2)</script>',

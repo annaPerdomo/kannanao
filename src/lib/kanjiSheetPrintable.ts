@@ -1,7 +1,6 @@
 import type { PlanDeck } from '@/types/lessonPlan';
 
 import { furiganaFromReading } from './furigana';
-import { documentHtml } from './kanaChartPrintable';
 import {
   kanjiAliveUrl,
   type KanjiStrokes,
@@ -9,7 +8,8 @@ import {
   strokesSvg,
   uniqueKanji,
 } from './kanjiStrokes';
-import { escapeHtml, furiganaToRubyHtml, PRINT_BASE_CSS } from './lessonPrintable';
+import { escapeHtml, furiganaToRubyHtml } from './lessonPrintable';
+import { brandHeaderHtml, printDocumentHtml } from './printBrand';
 
 export const PRACTICE_BOXES = 10;
 export const TRACE_BOXES = 3;
@@ -35,13 +35,9 @@ export interface KanjiSheetLabels {
 }
 
 const KANJI_CSS = `
-  ${PRINT_BASE_CSS}
   body { padding: 0; }
   .sheet { page-break-after: always; }
   .sheet:last-of-type { page-break-after: auto; }
-  .sheet-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-  h1 { font-size: 1.1rem; margin: 0 0 8px; }
-  .nameline { font-size: 0.8rem; white-space: nowrap; }
   .empty { font-size: 0.85rem; color: #555; }
   .card { border: 1px solid #333; padding: 6px 8px; margin-bottom: 8px; page-break-inside: avoid; }
   .wordline { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
@@ -50,9 +46,9 @@ const KANJI_CSS = `
   .reading { font-size: 0.85rem; color: #555; }
   .meaning { font-size: 0.78rem; color: #555; }
   .kanji-row { margin: 6px 0; }
-  .kanji-top { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
+  .kanji-top { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
   .model { width: 20mm; height: 20mm; border: 1px solid #333; box-sizing: border-box; flex: none; }
-  .info { width: 40mm; flex: none; }
+  .info { flex: none; }
   .strokecount { font-size: 0.6rem; color: #555; }
   .watch { font-size: 0.6rem; color: #555; white-space: nowrap; }
   .watch a { color: #555; }
@@ -180,11 +176,10 @@ export function buildKanjiSheetHtml(args: {
         ? `<p class="credit">${escapeHtml(labels.credit)}</p>`
         : '';
 
+    const nameLine = `${labels.name}：＿＿＿＿＿＿　${labels.date}：＿＿＿＿`;
+
     return `<div class="sheet">
-<div class="sheet-head">
-  <h1>${escapeHtml(week.heading)}</h1>
-  <div class="nameline">${escapeHtml(labels.name)}：＿＿＿＿＿＿　${escapeHtml(labels.date)}：＿＿＿＿</div>
-</div>
+${brandHeaderHtml({ title: week.heading, nameLine })}
 ${cardsHtml}
 ${credit}
 </div>`;
@@ -193,7 +188,13 @@ ${credit}
   const body =
     sheets.length > 0
       ? sheets.join('\n')
-      : `<div class="sheet"><h1>${escapeHtml(labels.title)}</h1><p class="empty">${escapeHtml(labels.empty)}</p></div>`;
+      : `<div class="sheet">${brandHeaderHtml({ title: labels.title })}<p class="empty">${escapeHtml(labels.empty)}</p></div>`;
 
-  return documentHtml(labels.title, args.locale, KANJI_CSS, body);
+  return printDocumentHtml({
+    title: labels.title,
+    locale: args.locale,
+    css: KANJI_CSS,
+    body,
+    header: false,
+  });
 }
