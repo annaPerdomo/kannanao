@@ -39,5 +39,9 @@ describe('CreditsSection', () => {
       'https://unsplash.com/?utm_source=tangodachi&utm_medium=referral',
     );
     expect(unsplash).toHaveAttribute('target', '_blank');
+
+    const kanjivg = screen.getByRole('link', { name: 'KanjiVG' });
+    expect(kanjivg).toHaveAttribute('href', 'https://kanjivg.tagaini.net/');
+    expect(kanjivg).toHaveAttribute('target', '_blank');
   });
 });

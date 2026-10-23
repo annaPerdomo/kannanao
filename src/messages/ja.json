@@ -2660,6 +2660,7 @@
       "title": "クレジット",
       "description": "Tangodachiで使っているデータと写真",
       "kanjidic": "漢字の読みには、<edrdg>電子辞書研究開発グループ（EDRDG）</edrdg>の<kanjidic>KANJIDIC2</kanjidic>を<licence>クリエイティブ・コモンズ 表示 - 継承 4.0 ライセンス</licence>のもとで使っています。",
+      "kanjivg": "漢字の書き順は Ulrich Apel さんの <kanjivg>KanjiVG</kanjivg> を <licence>クリエイティブ・コモンズ 表示-継承 3.0</licence> ライセンスのもとで使っています。",
       "unsplash": "カードの写真は<unsplash>Unsplash</unsplash>のものです。撮影者の名前は写真に表示しています。"
     }
   },

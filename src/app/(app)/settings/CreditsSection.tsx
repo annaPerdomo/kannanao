@@ -37,6 +37,12 @@ export function CreditsSection() {
           })}
         </Typography>
         <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
+          {t.rich('kanjivg', {
+            kanjivg: creditLink('https://kanjivg.tagaini.net/'),
+            licence: creditLink('https://creativecommons.org/licenses/by-sa/3.0/'),
+          })}
+        </Typography>
+        <Typography sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
           {t.rich('unsplash', {
             unsplash: creditLink(UNSPLASH_URL),
           })}

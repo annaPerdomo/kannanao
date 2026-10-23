@@ -2669,6 +2669,7 @@
       "title": "Credits",
       "description": "Data and pictures that help Tangodachi work",
       "kanjidic": "Kanji readings come from <kanjidic>KANJIDIC2</kanjidic>, made by the <edrdg>Electronic Dictionary Research and Development Group</edrdg>, used under the <licence>Creative Commons Attribution-ShareAlike 4.0 licence</licence>.",
+      "kanjivg": "Kanji stroke order comes from <kanjivg>KanjiVG</kanjivg> by Ulrich Apel, used under the <licence>Creative Commons Attribution-ShareAlike 3.0 licence</licence>.",
       "unsplash": "Card pictures come from <unsplash>Unsplash</unsplash>, and photographers are credited on their pictures."
     }
   },
