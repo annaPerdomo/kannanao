@@ -11,6 +11,7 @@ import type { LessonPlan } from '@/types/lessonPlan';
 
 import { BingoSection } from './BingoSection';
 import { FlashcardSheetSection } from './FlashcardSheetSection';
+import { HomePracticeSection } from './HomePracticeSection';
 import { KanaSheetSection } from './KanaSheetSection';
 import { KanjiSheetSection } from './KanjiSheetSection';
 import { WorksheetSection } from './WorksheetSection';
@@ -55,6 +56,7 @@ export function ReferenceSheetsDialog({
         <FlashcardSheetSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
         <WorksheetSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
         <BingoSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
+        <HomePracticeSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
 
         <Divider />
 
