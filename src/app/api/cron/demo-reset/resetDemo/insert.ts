@@ -159,8 +159,6 @@ export async function insertLearnerHistory(
     interval_days: row.intervalDays,
     ease: row.ease,
     lapse_count: lapses.get(row.cardId) ?? 0,
-    // Prod's increment_card_progress never actually stamps this column (20261022010000_srs_sitting_and_overdue.sql).
-    last_lapse_at: null,
   }));
   if (progressRows.length > 0) {
     await mustSucceed(
