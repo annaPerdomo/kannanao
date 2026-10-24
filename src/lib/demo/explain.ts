@@ -48,6 +48,7 @@ function reasonForLeg(
   assignmentMode: string | null,
 ): LegReason {
   if (leg.mode === 'review') {
+    if (day.dueCount === 0 && day.kanaDue) return { leg, reason: 'kana', values: {} };
     if (day.dueCount > BASE_REVIEW_CAP) {
       return {
         leg,

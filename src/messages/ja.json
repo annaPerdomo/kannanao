@@ -5843,7 +5843,7 @@
     "reasons": {
       "review": "きょう{count}こ、レビューがある",
       "reviewCapRaised": "きょう{count}こレビューがあって、たくさんあるときはレビューが{cap}こまでふえる",
-      "kana": "あたらしいひらがな・カタカナのれつがある",
+      "kana": "れんしゅうできるもじがあるよ",
       "newWords": "あたらしいことばが{count}こ",
       "recall": "{count}こを見ないで答える練習",
       "strongWords": "{count}こが、文づくりや穴うめにちょうせんできるくらい強くなった",

@@ -167,9 +167,8 @@ export async function insertLearnerHistory(
     );
   }
 
-  const sessionRows = learner.days.map((day) => {
-    const stats = sessionStatsForDay(day);
-    return {
+  const sessionRows = learner.days.flatMap((day) =>
+    sessionStatsForDay(day).map((stats) => ({
       user_id: learnerId,
       deck_id: deckId,
       practice_mode: stats.practiceMode,
@@ -179,8 +178,8 @@ export async function insertLearnerHistory(
       duration_secs: Math.round((Date.parse(stats.endedAt) - Date.parse(stats.startedAt)) / 1000),
       started_at: stats.startedAt,
       ended_at: stats.endedAt,
-    };
-  });
+    })),
+  );
   if (sessionRows.length > 0) {
     await mustSucceed(
       `insert study_sessions for ${learner.username}`,

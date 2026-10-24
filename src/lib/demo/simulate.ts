@@ -1,15 +1,19 @@
+import { openKanaSetIds } from '@/lib/assignmentAvailability';
 import { type CardStrength, cardStrength } from '@/lib/cardStrength';
 import {
   dailyReviewCap,
   daysSince,
   pickFocusDeck,
+  pickKanaRow,
   planDailyPracticeDetailed,
 } from '@/lib/dailyPractice';
 import { type DueRow, rankDueCards } from '@/lib/dueOrder';
 import { endingItems } from '@/lib/grammarEndings';
 import { isTricky, type WordProgressRow } from '@/lib/handoutWords';
+import type { KanaProgressMap } from '@/lib/kanaProficiency';
 import type { ChainLeg, ChainMode } from '@/lib/practiceChain';
 import { hashSeed, seededShuffle } from '@/lib/printPlan';
+import { pickQuestKana } from '@/lib/quest';
 import { QUIZ_DEFAULT_COUNT } from '@/lib/quiz';
 import { priorityDeckIds } from '@/lib/reviewPriority';
 import { nextSchedule, START_EASE } from '@/lib/srs';
@@ -19,7 +23,7 @@ import { DEMO_CARDS, DEMO_DECK, DEMO_SENTENCES, demoAssignment } from './deck';
 import type { DemoPersona } from './personas';
 import { dateKey, DAY_MS } from './time';
 
-const SITTING_GAP_MS = 20_000;
+export const SITTING_GAP_MS = 20_000;
 
 /** Which cards a leg's mode writes to `card_progress` — sentence and kana
  * modes never pass a cardId; `endings` writes only its drill items. */
@@ -44,6 +48,7 @@ export interface DemoDayPlan {
   now: string;
   daysAway: number | null;
   dueCount: number;
+  kanaDue: boolean;
   reviewCap: number;
   reviewCardIds: string[];
   plan: ChainLeg[];
@@ -75,14 +80,25 @@ export function planForDay(
     const card = cardById.get(row.cardId);
     return card ? [{ card, intervalDays: row.intervalDays, nextReviewAt: row.nextReviewAt }] : [];
   });
-  const priorityIds = new Set(priorityDeckIds([demoAssignment(now)], date));
+  const assignments = [demoAssignment(now)];
+  const priorityIds = new Set(priorityDeckIds(assignments, date));
   const reviewCardIds = rankDueCards(dueCardRows, priorityIds)
     .slice(0, reviewCap)
     .map((card) => card.id);
 
-  const focus = pickFocusDeck([demoAssignment(now)], [DEMO_DECK], date);
+  // Demo learners never carry kana_progress rows (the reset wipes them), which
+  // mirrors useKanaProgress loaded-empty for a real learner with none — never the
+  // pre-load null, since the simulator has no async fetch to settle.
+  const byKana: KanaProgressMap = new Map();
+  const assignedKanaSetIds = openKanaSetIds(assignments, date);
+  const kanaDue = dueCount === 0 && pickQuestKana(byKana, assignedKanaSetIds).length > 0;
+  const kanaRow = pickKanaRow(assignments, date);
+
+  const focus = pickFocusDeck(assignments, [DEMO_DECK], date);
   const { legs: plan, offered } = planDailyPracticeDetailed({
     dueCount,
+    kanaDue,
+    kanaRow,
     focus,
     cards: DEMO_CARDS,
     progress,
@@ -100,6 +116,7 @@ export function planForDay(
     now: now.toISOString(),
     daysAway,
     dueCount,
+    kanaDue,
     reviewCap,
     reviewCardIds,
     plan,
@@ -217,6 +234,13 @@ function writableCardIds(leg: ChainLeg, cardIds: string[]): string[] {
   return cardIds;
 }
 
+/** One `study_sessions` row's worth of answers — the real app opens one session
+ * per played leg (`startSession`/`endSession` in `useProgress.ts`). */
+export interface DemoLegSession {
+  mode: ChainMode;
+  answers: DemoAnswerInput[];
+}
+
 function playSitting(
   progress: CardProgress[],
   at: Date,
@@ -227,21 +251,31 @@ function playSitting(
   dayPlan: DemoDayPlan;
   answers: DemoAnswerInput[];
   changes: DemoCardChange[];
+  legSessions: DemoLegSession[];
   progress: CardProgress[];
   lastAnsweredAt: Date;
 } {
   const dayPlan = planForDay(progress, at, opts);
   const askedIds = new Set<string>();
   const answers: DemoAnswerInput[] = [];
+  const legSessions: DemoLegSession[] = [];
 
-  if (dayPlan.reviewCardIds.length > 0) {
-    answers.push(...answersForSitting(dayPlan.reviewCardIds, misses));
+  // Empty when the review leg exists only for kanaDue: no kana answers are
+  // simulated, so that leg's session reports zero rather than invented ones.
+  const reviewAnswers =
+    dayPlan.reviewCardIds.length > 0 ? answersForSitting(dayPlan.reviewCardIds, misses) : [];
+  if (reviewAnswers.length > 0) {
+    answers.push(...reviewAnswers);
     dayPlan.reviewCardIds.forEach((id) => askedIds.add(id));
   }
 
   for (const leg of dayPlan.plan) {
-    if (leg.mode === 'review') continue;
+    if (leg.mode === 'review') {
+      legSessions.push({ mode: leg.mode, answers: reviewAnswers });
+      continue;
+    }
     const cardIds = legCardIds(leg, dayPlan.sessionCardIds, seedKey, dayPlan.date);
+    legSessions.push({ mode: leg.mode, answers: answersForSitting(cardIds, misses) });
     const writable = writableCardIds(leg, cardIds);
     if (writable.length === 0) continue;
     answers.push(...answersForSitting(writable, misses));
@@ -259,12 +293,13 @@ function playSitting(
   const { progress: nextProgress, changes } = applyAnswers(progress, answers, at);
   const lastAnsweredAt =
     answers.length > 0 ? new Date(at.getTime() + (answers.length - 1) * SITTING_GAP_MS) : at;
-  return { dayPlan, answers, changes, progress: nextProgress, lastAnsweredAt };
+  return { dayPlan, answers, changes, legSessions, progress: nextProgress, lastAnsweredAt };
 }
 
 export interface DemoDayLog extends DemoDayPlan {
   answers: DemoAnswerInput[];
   changes: DemoCardChange[];
+  legSessions: DemoLegSession[];
 }
 
 export interface DemoSimulation {
@@ -287,10 +322,11 @@ export function simulatePersona(persona: DemoPersona, now: Date): DemoSimulation
       dayPlan,
       answers,
       changes,
+      legSessions,
       progress: nextProgress,
     } = playSitting(progress, at, studyDay.misses, persona.key);
     progress = nextProgress;
-    days.push({ ...dayPlan, answers, changes });
+    days.push({ ...dayPlan, answers, changes, legSessions });
   }
 
   const today = planForDay(progress, now);

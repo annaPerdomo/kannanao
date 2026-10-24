@@ -252,6 +252,29 @@ describe('GET /api/cron/demo-reset', () => {
       }
     });
 
+    it('seeds one study_sessions row per played leg, not one per day', async () => {
+      await GET(request(`Bearer ${SECRET}`));
+
+      const sessionInserts = calls.filter((c) => c.table === 'study_sessions' && c.op === 'insert');
+      const insertedRows = sessionInserts.flatMap(
+        (c) => c.args[0] as Array<{ cards_studied: number }>,
+      );
+
+      const { buildDemoSeed } = await import('@/lib/demo/seed');
+      const seed = buildDemoSeed(NOW);
+      const expectedCount = seed.learners.reduce(
+        (sum, l) => sum + l.days.reduce((daySum, d) => daySum + d.plan.length, 0),
+        0,
+      );
+
+      expect(insertedRows).toHaveLength(expectedCount);
+      // A day's worth of real study rarely tops a few dozen cards; the old
+      // one-row-per-day bug inflated single rows well past that.
+      for (const row of insertedRows) {
+        expect(row.cards_studied).toBeLessThan(30);
+      }
+    });
+
     it('wipes before it inserts demo content', async () => {
       await GET(request(`Bearer ${SECRET}`));
 
