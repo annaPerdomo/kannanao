@@ -135,8 +135,7 @@ export function progressTotalsFor(days: DemoDayLog[], now: Date): DemoProgressTo
 }
 
 /** Lapse counts per card, the way `increment_card_progress` stamps `lapse_count`:
- * a wrong first-pass answer when the card's prior interval was already >= LAPSE_INTERVAL_DAYS.
- * Prod's `last_lapse_at` write never actually ran (see the 2026-10-22 migration), so it stays null. */
+ * a wrong first-pass answer when the card's prior interval was already >= LAPSE_INTERVAL_DAYS. */
 export function lapseCountsFor(days: DemoDayLog[]): Map<string, number> {
   const counts = new Map<string, number>();
   for (const day of days) {
