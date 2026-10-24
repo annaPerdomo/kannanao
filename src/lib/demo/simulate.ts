@@ -1,15 +1,19 @@
+import { openKanaSetIds } from '@/lib/assignmentAvailability';
 import { type CardStrength, cardStrength } from '@/lib/cardStrength';
 import {
   dailyReviewCap,
   daysSince,
   pickFocusDeck,
+  pickKanaRow,
   planDailyPracticeDetailed,
 } from '@/lib/dailyPractice';
 import { type DueRow, rankDueCards } from '@/lib/dueOrder';
 import { endingItems } from '@/lib/grammarEndings';
 import { isTricky, type WordProgressRow } from '@/lib/handoutWords';
+import type { KanaProgressMap } from '@/lib/kanaProficiency';
 import type { ChainLeg, ChainMode } from '@/lib/practiceChain';
 import { hashSeed, seededShuffle } from '@/lib/printPlan';
+import { pickQuestKana } from '@/lib/quest';
 import { QUIZ_DEFAULT_COUNT } from '@/lib/quiz';
 import { priorityDeckIds } from '@/lib/reviewPriority';
 import { nextSchedule, START_EASE } from '@/lib/srs';
@@ -44,6 +48,7 @@ export interface DemoDayPlan {
   now: string;
   daysAway: number | null;
   dueCount: number;
+  kanaDue: boolean;
   reviewCap: number;
   reviewCardIds: string[];
   plan: ChainLeg[];
@@ -75,14 +80,25 @@ export function planForDay(
     const card = cardById.get(row.cardId);
     return card ? [{ card, intervalDays: row.intervalDays, nextReviewAt: row.nextReviewAt }] : [];
   });
-  const priorityIds = new Set(priorityDeckIds([demoAssignment(now)], date));
+  const assignments = [demoAssignment(now)];
+  const priorityIds = new Set(priorityDeckIds(assignments, date));
   const reviewCardIds = rankDueCards(dueCardRows, priorityIds)
     .slice(0, reviewCap)
     .map((card) => card.id);
 
-  const focus = pickFocusDeck([demoAssignment(now)], [DEMO_DECK], date);
+  // Demo learners never carry kana_progress rows (the reset wipes them), which
+  // mirrors useKanaProgress loaded-empty for a real learner with none — never the
+  // pre-load null, since the simulator has no async fetch to settle.
+  const byKana: KanaProgressMap = new Map();
+  const assignedKanaSetIds = openKanaSetIds(assignments, date);
+  const kanaDue = dueCount === 0 && pickQuestKana(byKana, assignedKanaSetIds).length > 0;
+  const kanaRow = pickKanaRow(assignments, date);
+
+  const focus = pickFocusDeck(assignments, [DEMO_DECK], date);
   const { legs: plan, offered } = planDailyPracticeDetailed({
     dueCount,
+    kanaDue,
+    kanaRow,
     focus,
     cards: DEMO_CARDS,
     progress,
@@ -100,6 +116,7 @@ export function planForDay(
     now: now.toISOString(),
     daysAway,
     dueCount,
+    kanaDue,
     reviewCap,
     reviewCardIds,
     plan,

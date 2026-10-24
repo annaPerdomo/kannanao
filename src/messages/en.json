@@ -5852,7 +5852,7 @@
     "reasons": {
       "review": "{count, plural, one {# word} other {# words}} due today",
       "reviewCapRaised": "{count, plural, one {# word} other {# words}} due today — review goes up to {cap} when there's a lot to catch up on",
-      "kana": "A new row of kana is ready to learn",
+      "kana": "Some letters are ready to practice",
       "newWords": "{count, plural, one {# new word to meet} other {# new words to meet}}",
       "recall": "{count, plural, one {# word} other {# words}} to recall from memory",
       "strongWords": "{count, plural, one {# word} other {# words}} strong enough for a full sentence or fill-in-the-blank",

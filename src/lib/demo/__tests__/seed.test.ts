@@ -70,6 +70,7 @@ describe('lapseCountsFor', () => {
       now: '2026-10-01T10:00:00.000Z',
       daysAway: null,
       dueCount: 0,
+      kanaDue: false,
       reviewCap: 0,
       reviewCardIds: [],
       plan: [],

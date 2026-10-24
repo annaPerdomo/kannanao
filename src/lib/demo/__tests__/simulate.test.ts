@@ -1,16 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
+import { openKanaSetIds } from '@/lib/assignmentAvailability';
 import { cardStrength, countStrengths } from '@/lib/cardStrength';
 import {
   BASE_REVIEW_CAP,
   dailyReviewCap,
   pickFocusDeck,
+  pickKanaRow,
   planDailyPractice,
 } from '@/lib/dailyPractice';
 import { endingItems } from '@/lib/grammarEndings';
 import { groupWordInsights, isTricky } from '@/lib/handoutWords';
 import { MIXED_SESSION_CARDS } from '@/lib/mixedPractice';
 import { hashSeed, seededShuffle } from '@/lib/printPlan';
+import { pickQuestKana } from '@/lib/quest';
 import { QUIZ_DEFAULT_COUNT } from '@/lib/quiz';
 
 import { DEMO_CARDS, DEMO_DECK, DEMO_SENTENCES, demoAssignment } from '../deck';
@@ -48,9 +51,15 @@ describe('persona intent', () => {
     const sora = personaByKey('sora');
     const sim = simulatePersona(sora, NOW);
     const today = sim.today.date;
-    const focus = pickFocusDeck([demoAssignment(NOW)], [DEMO_DECK], today);
+    const assignments = [demoAssignment(NOW)];
+    const focus = pickFocusDeck(assignments, [DEMO_DECK], today);
+    const assignedKanaSetIds = openKanaSetIds(assignments, today);
+    const kanaDue = pickQuestKana(new Map(), assignedKanaSetIds).length > 0;
+    const kanaRow = pickKanaRow(assignments, today);
     const expected = planDailyPractice({
       dueCount: 0,
+      kanaDue,
+      kanaRow,
       focus,
       cards: DEMO_CARDS,
       progress: [],
