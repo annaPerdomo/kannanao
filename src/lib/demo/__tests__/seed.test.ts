@@ -4,7 +4,7 @@ import { LAPSE_INTERVAL_DAYS } from '@/lib/srs';
 
 import { isDemoUsername } from '../identity';
 import { DEMO_PERSONAS } from '../personas';
-import { buildDemoSeed, lapseCountsFor, progressTotalsFor } from '../seed';
+import { buildDemoSeed, lapseCountsFor, progressTotalsFor, sessionStatsForDay } from '../seed';
 import { simulatePersona } from '../simulate';
 
 const NOW = new Date('2026-10-23T17:00:00Z');
@@ -76,6 +76,7 @@ describe('lapseCountsFor', () => {
       plan: [],
       offered: [],
       sessionCardIds: [],
+      legSessions: [],
     };
 
     const settledMiss = {
@@ -132,6 +133,48 @@ describe('lapseCountsFor', () => {
 
     expect(lapseCountsFor([settledMiss])).toEqual(new Map([['card-a', 1]]));
     expect(lapseCountsFor([freshMiss])).toEqual(new Map());
+  });
+});
+
+describe('sessionStatsForDay', () => {
+  it('emits one row per played leg, each carrying that leg’s own answers', () => {
+    for (const p of DEMO_PERSONAS) {
+      const sim = simulatePersona(p, NOW);
+      for (const day of sim.days) {
+        const rows = sessionStatsForDay(day);
+        expect(rows).toHaveLength(day.plan.length);
+        rows.forEach((row, i) => {
+          const leg = day.legSessions[i];
+          expect(row.practiceMode).toBe(leg.mode);
+          expect(row.cardsStudied).toBe(leg.answers.length);
+          expect(row.cardsCorrect).toBe(leg.answers.filter((a) => a.correct).length);
+          expect(Date.parse(row.endedAt)).toBeGreaterThanOrEqual(Date.parse(row.startedAt));
+        });
+      }
+    }
+  });
+
+  it('a kana-only review leg (no words due) reports zero studied, not invented kana', () => {
+    const maya = DEMO_PERSONAS.find((p) => p.key === 'maya')!;
+    const sim = simulatePersona(maya, NOW);
+    const kanaOnlyDay = sim.days.find(
+      (d) => d.dueCount === 0 && d.plan.some((leg) => leg.mode === 'review'),
+    );
+    expect(kanaOnlyDay).toBeDefined();
+    const reviewRow = sessionStatsForDay(kanaOnlyDay!).find((r) => r.practiceMode === 'review');
+    expect(reviewRow?.cardsStudied).toBe(0);
+    expect(reviewRow?.cardsCorrect).toBe(0);
+    expect(reviewRow?.xpEarned).toBe(0);
+  });
+
+  it('runs legs back-to-back: each leg starts where the previous one ended', () => {
+    const maya = DEMO_PERSONAS.find((p) => p.key === 'maya')!;
+    const sim = simulatePersona(maya, NOW);
+    const busyDay = sim.days.find((d) => d.plan.length > 1)!;
+    const rows = sessionStatsForDay(busyDay);
+    for (let i = 1; i < rows.length; i++) {
+      expect(rows[i].startedAt).toBe(rows[i - 1].endedAt);
+    }
   });
 });
 

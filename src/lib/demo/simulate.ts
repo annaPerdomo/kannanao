@@ -23,7 +23,7 @@ import { DEMO_CARDS, DEMO_DECK, DEMO_SENTENCES, demoAssignment } from './deck';
 import type { DemoPersona } from './personas';
 import { dateKey, DAY_MS } from './time';
 
-const SITTING_GAP_MS = 20_000;
+export const SITTING_GAP_MS = 20_000;
 
 /** Which cards a leg's mode writes to `card_progress` — sentence and kana
  * modes never pass a cardId; `endings` writes only its drill items. */
@@ -234,6 +234,13 @@ function writableCardIds(leg: ChainLeg, cardIds: string[]): string[] {
   return cardIds;
 }
 
+/** One `study_sessions` row's worth of answers — the real app opens one session
+ * per played leg (`startSession`/`endSession` in `useProgress.ts`). */
+export interface DemoLegSession {
+  mode: ChainMode;
+  answers: DemoAnswerInput[];
+}
+
 function playSitting(
   progress: CardProgress[],
   at: Date,
@@ -244,21 +251,31 @@ function playSitting(
   dayPlan: DemoDayPlan;
   answers: DemoAnswerInput[];
   changes: DemoCardChange[];
+  legSessions: DemoLegSession[];
   progress: CardProgress[];
   lastAnsweredAt: Date;
 } {
   const dayPlan = planForDay(progress, at, opts);
   const askedIds = new Set<string>();
   const answers: DemoAnswerInput[] = [];
+  const legSessions: DemoLegSession[] = [];
 
-  if (dayPlan.reviewCardIds.length > 0) {
-    answers.push(...answersForSitting(dayPlan.reviewCardIds, misses));
+  // Empty when the review leg exists only for kanaDue: no kana answers are
+  // simulated, so that leg's session reports zero rather than invented ones.
+  const reviewAnswers =
+    dayPlan.reviewCardIds.length > 0 ? answersForSitting(dayPlan.reviewCardIds, misses) : [];
+  if (reviewAnswers.length > 0) {
+    answers.push(...reviewAnswers);
     dayPlan.reviewCardIds.forEach((id) => askedIds.add(id));
   }
 
   for (const leg of dayPlan.plan) {
-    if (leg.mode === 'review') continue;
+    if (leg.mode === 'review') {
+      legSessions.push({ mode: leg.mode, answers: reviewAnswers });
+      continue;
+    }
     const cardIds = legCardIds(leg, dayPlan.sessionCardIds, seedKey, dayPlan.date);
+    legSessions.push({ mode: leg.mode, answers: answersForSitting(cardIds, misses) });
     const writable = writableCardIds(leg, cardIds);
     if (writable.length === 0) continue;
     answers.push(...answersForSitting(writable, misses));
@@ -276,12 +293,13 @@ function playSitting(
   const { progress: nextProgress, changes } = applyAnswers(progress, answers, at);
   const lastAnsweredAt =
     answers.length > 0 ? new Date(at.getTime() + (answers.length - 1) * SITTING_GAP_MS) : at;
-  return { dayPlan, answers, changes, progress: nextProgress, lastAnsweredAt };
+  return { dayPlan, answers, changes, legSessions, progress: nextProgress, lastAnsweredAt };
 }
 
 export interface DemoDayLog extends DemoDayPlan {
   answers: DemoAnswerInput[];
   changes: DemoCardChange[];
+  legSessions: DemoLegSession[];
 }
 
 export interface DemoSimulation {
@@ -304,10 +322,11 @@ export function simulatePersona(persona: DemoPersona, now: Date): DemoSimulation
       dayPlan,
       answers,
       changes,
+      legSessions,
       progress: nextProgress,
     } = playSitting(progress, at, studyDay.misses, persona.key);
     progress = nextProgress;
-    days.push({ ...dayPlan, answers, changes });
+    days.push({ ...dayPlan, answers, changes, legSessions });
   }
 
   const today = planForDay(progress, now);
