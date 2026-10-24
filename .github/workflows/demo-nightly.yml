@@ -1,0 +1,49 @@
+name: Demo nightly check
+
+on:
+  schedule:
+    # An hour after the 10:00 UTC reset (vercel.json), so it checks the night's fresh data.
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  demo-check:
+    name: Demo learner/teacher check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run demo checks
+        run: pnpm test:demo
+        env:
+          PLAYWRIGHT_BASE_URL: https://tangodachi.app
+          DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+
+      # Only the screenshots — no trace/report artifacts, which could carry the
+      # signed-in demo session into this public repo's Actions logs.
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-shots
+          path: test-results/demo-shots
+          retention-days: 14

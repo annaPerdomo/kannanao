@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 import { BASELINE_CHOICES, DEFAULT_BASELINE } from '@/lib/wordProgress';
 
 import { rateLimit } from '../../../_lib/rateLimit';
+import { rejectDemo } from '../../../_lib/rejectDemo';
 import { assignCompanionKana } from '../../_lib/assignCompanionKana';
 import { generateDeckSentences } from '../../_lib/generateDeckSentences';
 import {
@@ -177,6 +178,8 @@ export async function POST(req: NextRequest) {
   const access = await requireGroupAccess(req, groupId);
   if (access instanceof NextResponse) return access;
   const { organizer, group } = access;
+  const demoCheck = rejectDemo(organizer);
+  if (demoCheck) return demoCheck;
 
   const sb = getServiceSupabase();
 

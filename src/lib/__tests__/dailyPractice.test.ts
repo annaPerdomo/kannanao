@@ -14,6 +14,7 @@ import {
   pickFocusDeck,
   pickKanaRow,
   planDailyPractice,
+  planDailyPracticeDetailed,
   previewMinutes,
   readDailyRound,
 } from '@/lib/dailyPractice';
@@ -391,6 +392,60 @@ describe('planDailyPractice', () => {
     expect(focus?.assignment).toBeNull();
     const legs = plan({ dueCount: 0, kanaRow: 'hira-ka', focus });
     expect(legs[0]).toEqual({ step: 'practice', mode: 'kana-journey', kanaSet: 'hira-ka' });
+  });
+
+  it('threads `now` into the session pick, changing which card counts as due vs waiting', () => {
+    const wideCards = Array.from({ length: 13 }, (_, i) => card(`w${i}`));
+    const flipAt = new Date('2026-09-02T12:00:00Z');
+    const progress: CardProgress[] = wideCards.map((c, i) => ({
+      ...strong(c.id),
+      nextReviewAt: i === 0 ? flipAt.toISOString() : '2020-01-01T00:00:00Z',
+    }));
+    const dueNow = new Date(flipAt.getTime() + 1000);
+    const waitingNow = new Date(flipAt.getTime() - 1000);
+
+    const dueLegs = plan({ cards: wideCards, progress, now: dueNow });
+    const waitingLegs = plan({ cards: wideCards, progress, now: waitingNow });
+    const dueIds = dueLegs.find((l) => l.cardIds)?.cardIds ?? [];
+    const waitingIds = waitingLegs.find((l) => l.cardIds)?.cardIds ?? [];
+
+    expect(dueIds).toContain('w0');
+    expect(waitingIds).not.toContain('w0');
+  });
+});
+
+describe('planDailyPracticeDetailed', () => {
+  const cards = Array.from({ length: 12 }, (_, i) => card(`c${i}`));
+
+  it('offers the full mixed ladder fitDaily then trims, with legs matching the trimmed result', () => {
+    const progress = cards.map((c) => strong(c.id));
+    const input = {
+      dueCount: 5,
+      ttsReady: true,
+      progress,
+      cards,
+      focus: focusFor(deck('d1', { readingPractice: true }), assignment({ required_mode: 'quiz' })),
+      sentenceCount: 0,
+    };
+    const { legs, offered } = planDailyPracticeDetailed(input);
+    expect(legs).toEqual(planDailyPractice(input));
+    expect(offered.length).toBeGreaterThan(
+      legs.filter((leg) => leg.step !== 'review' && leg.mode !== 'quiz').length,
+    );
+    expect(offered.some((leg) => leg.mode === 'quiz')).toBe(false);
+  });
+
+  it('offers nothing when there is no focus deck', () => {
+    expect(
+      planDailyPracticeDetailed({
+        dueCount: 3,
+        focus: null,
+        cards,
+        progress: [],
+        ttsReady: false,
+        sentenceCount: 0,
+      }).offered,
+    ).toEqual([]);
   });
 });
 

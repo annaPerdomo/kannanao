@@ -19,6 +19,8 @@ import { endingItems, MIN_ENDING_ITEMS } from './grammarEndings';
 import type { ChainLeg, ChainMode } from './practiceChain';
 import type { CardProgress } from './supabase';
 
+export { MIN_SENTENCES };
+
 /** What this deck, on this device, is able to ask. */
 export interface MixedDeckSupport {
   cardCount: number;

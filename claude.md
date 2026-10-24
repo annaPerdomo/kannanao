@@ -176,6 +176,13 @@ Every surface that shows message text must run it through `parseSticker()` first
 
 There is one set per study buddy. Tango's set uses named tokens (`:wave:` → `public/stickers/wave.webp`), already stored in message history — never rename them. Every other buddy's set is numbered in sheet order (`:fox-3:` → `public/stickers/fox/3.webp`), sliced from `promo/<buddy>-chat-stickers.png` by `scripts/extract-buddy-stickers.py`; Tango's art comes from `promo/tango-stickers.png` via `scripts/extract-stickers.py` (both local-only, not tracked — see `scripts/` in `.gitignore`). Owning a buddy in the shop unlocks its set in `StickerPicker`; locked sets stay visible, grayed out, with a link to the shop. Rendering never checks ownership, so any token in history always shows. Sticker files are excluded from the service-worker precache via `publicExcludes` in `next.config.ts`. Adding a Tango sticker means a `STICKERS` entry, a name under `Messages.stickerNames` in **both** `en.json` and `ja.json`, and a re-run of its script; a new buddy set means a `BUDDY_SETS` entry (count must match the sliced files — a test checks) and a `SETS` entry in the buddy script.
 
+## Demo system
+
+Public "What if?" page (`/how-it-works/practice`) and a nightly-rebuilt demo teacher/group in
+production — see `docs/demo.md`. The one rule: demo code only imports the real planners/scheduler
+(never reimplements them). When a practice/teacher rule changes, update the `src/lib/demo` goldens
+**in the same PR**.
+
 ## Hooks Pattern
 
 Hooks in `src/hooks/` follow this pattern:

@@ -1,5 +1,3 @@
-import { timingSafeEqual } from 'node:crypto';
-
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/logger';
@@ -9,6 +7,7 @@ import {
   selectReminders,
 } from '@/lib/reviewReminder';
 
+import { isAuthorizedCron } from '../../_lib/cronAuth';
 import { type PushSubscriptionRow, sendPushToSubscriptions } from '../../_lib/sendPushNotification';
 import { getServiceSupabase } from '../../group/_lib/serviceSupabase';
 
@@ -20,24 +19,6 @@ export const dynamic = 'force-dynamic';
  * this exists to bound the fan-out to the push services rather than to go fast.
  */
 const SEND_CONCURRENCY = 10;
-
-/**
- * Vercel sends `authorization: Bearer ${CRON_SECRET}` automatically once the env
- * var is set. Fails closed: with no secret configured, nothing is authorized —
- * an unprotected endpoint that pushes to every user is worse than a broken one.
- */
-function isAuthorizedCron(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    logger.error('CRON_SECRET is not set — refusing to run review reminders');
-    return false;
-  }
-
-  const provided = Buffer.from(req.headers.get('authorization') ?? '');
-  const expected = Buffer.from(`Bearer ${secret}`);
-  // timingSafeEqual throws on a length mismatch, so check that first.
-  return provided.length === expected.length && timingSafeEqual(provided, expected);
-}
 
 interface CandidateRow {
   user_id: string;

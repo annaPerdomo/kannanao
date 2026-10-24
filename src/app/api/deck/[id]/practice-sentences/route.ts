@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import type { DbPracticeSentence } from '@/types/practiceSentence';
 
 import { rateLimit } from '../../../_lib/rateLimit';
+import { rejectDemo } from '../../../_lib/rejectDemo';
 import { requireAuthenticatedUser } from '../../../_lib/requireAuthenticatedUser';
 import { requireOrganizerAccount } from '../../../_lib/requireOrganizerAccount';
 import { generateDeckSentences, selectSentences } from '../../../group/_lib/generateDeckSentences';
@@ -65,6 +66,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const orgCheck = await requireOrganizerAccount(req);
   if (orgCheck instanceof NextResponse) return orgCheck;
+  const demoCheck = rejectDemo(orgCheck);
+  if (demoCheck) return demoCheck;
 
   const { id: deckId } = await params;
 

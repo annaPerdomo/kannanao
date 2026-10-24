@@ -17,6 +17,7 @@ import { BASELINE_CHOICES, DEFAULT_BASELINE } from '@/lib/wordProgress';
 import type { ApplyDeckResult, LessonPlan, PlanDeck } from '@/types/lessonPlan';
 
 import { rateLimit } from '../../../_lib/rateLimit';
+import { rejectDemo } from '../../../_lib/rejectDemo';
 import { assignCompanionKana, type CompanionKanaRow } from '../../_lib/assignCompanionKana';
 import { generateDeckSentences } from '../../_lib/generateDeckSentences';
 import { consumeLessonBudget } from '../../_lib/lessonBudget';
@@ -168,6 +169,8 @@ export async function POST(req: NextRequest) {
 
   const access = await requireGroupAccess(req, groupId);
   if (access instanceof NextResponse) return access;
+  const demoCheck = rejectDemo(access.organizer);
+  if (demoCheck) return demoCheck;
   const organizerId = access.organizer.id;
 
   const decks = plan?.decks;

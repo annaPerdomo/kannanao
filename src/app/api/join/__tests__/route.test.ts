@@ -12,6 +12,7 @@ function setTable(table: string, data: unknown, error: unknown = null) {
 
 const calls: { table: string; method: string; args: unknown[] }[] = [];
 const deletedUsers: string[] = [];
+let organizerIsDemo = false;
 
 function makeChain(table: string) {
   const filters: [string, unknown][] = [];
@@ -55,6 +56,9 @@ vi.mock('@/app/api/group/_lib/serviceSupabase', () => ({
           deletedUsers.push(id);
           return { error: null };
         }),
+        getUserById: vi.fn(async () => ({
+          data: { user: { app_metadata: organizerIsDemo ? { demo: true } : {} } },
+        })),
       },
     },
   }),
@@ -71,11 +75,11 @@ const { POST } = await import('@/app/api/join/route');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function makeRequest() {
+function makeRequest(username = 'newbie') {
   return new NextRequest('http://localhost/api/join', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-forwarded-for': '10.0.0.7' },
-    body: JSON.stringify({ code: 'ABC123', username: 'newbie', password: 'hunter2' }),
+    body: JSON.stringify({ code: 'ABC123', username, password: 'hunter2' }),
   });
 }
 
@@ -94,6 +98,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   calls.length = 0;
   deletedUsers.length = 0;
+  organizerIsDemo = false;
   for (const k of Object.keys(tableData)) delete tableData[k];
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'http://localhost:54321';
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
@@ -135,5 +140,24 @@ describe('POST /api/join', () => {
     expect(calls.filter((c) => c.table === 'invite_codes' && c.method === 'update')).toHaveLength(
       2,
     );
+  });
+
+  it('rejects a demo- username as already taken, before creating any auth user', async () => {
+    const res = await POST(makeRequest('demo-x'));
+    const json = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(json.error).toBe('Username is already taken.');
+    expect(calls.some((c) => c.table === 'profiles' && c.method === 'insert')).toBe(false);
+  });
+
+  it("rejects a demo organizer's invite like an invalid code", async () => {
+    organizerIsDemo = true;
+    const res = await POST(makeRequest());
+    const json = await res.json();
+
+    expect(res.status).toBe(404);
+    expect(json.code).toBe('invalidCode');
+    expect(calls.some((c) => c.table === 'profiles' && c.method === 'insert')).toBe(false);
   });
 });

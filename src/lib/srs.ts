@@ -1,10 +1,12 @@
-// SM-2-lite spaced-repetition scheduler, mirroring the `srs_next` SQL function
-// (migration 20261022010000_srs_sitting_and_overdue.sql) — keep the two in
-// sync. Same-sitting answers never change ease, so a retry loop's repeat
-// misses don't double-punish one miss; an early answer keeps the interval.
+// SM-2-lite scheduler mirroring the `srs_next` SQL function; srsParity.test.ts
+// checks it against the live DB — regenerate with `pnpm srs:vectors`.
+// Same-sitting answers never change ease, so repeat misses in one retry
+// loop don't double-punish.
 
 export const MIN_EASE = 1.3;
 export const MAX_EASE = 2.8;
+/** A card with no progress row starts here — `increment_card_progress`'s default. */
+export const START_EASE = 2.5;
 export const MAX_INTERVAL_DAYS = 60;
 /** A missed card comes back this soon — same session, minutes later. */
 export const WRONG_REVIEW_DELAY_MIN = 10;

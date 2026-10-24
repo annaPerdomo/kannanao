@@ -5,7 +5,7 @@ import { normalizeFuriganaDeep } from '@/lib/furigana';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
-import { requireAuth } from '../../_lib/requireAuth';
+import { requireNonDemoAuth } from '../../_lib/rejectDemo';
 
 const RATE_LIMIT = { windowMs: 60_000, max: 8 };
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   const limited = await rateLimit(req, RATE_LIMIT);
   if (limited) return limited;
 
-  const auth = await requireAuth(req);
+  const auth = await requireNonDemoAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const body = await req.json().catch(() => null);

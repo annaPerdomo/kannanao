@@ -5,11 +5,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { DataError, toDataError } from '@/lib/dataError';
 import { type KanaProgressMap, kanaProgressMap } from '@/lib/kanaProficiency';
-import { nextSchedule } from '@/lib/srs';
+import { nextSchedule, START_EASE } from '@/lib/srs';
 import { getKanaProgress, upsertKanaProgress } from '@/lib/supabase';
 
 const START_INTERVAL_DAYS = 0;
-const START_EASE = 2.5;
 
 // `byKana` stays null until the first load resolves: defaulting to an empty map
 // would render an outage as "no stars yet" and re-lock the learner's progress.

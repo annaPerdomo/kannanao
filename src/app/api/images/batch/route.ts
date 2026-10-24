@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../../_lib/rateLimit';
+import { rejectDemo } from '../../_lib/rejectDemo';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import {
   MAX_BATCH_QUERIES,
@@ -78,6 +79,8 @@ export async function POST(req: NextRequest) {
 
   const orgCheck = await requireOrganizerAccount(req);
   if (orgCheck instanceof NextResponse) return orgCheck;
+  const demoCheck = rejectDemo(orgCheck);
+  if (demoCheck) return demoCheck;
 
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) {

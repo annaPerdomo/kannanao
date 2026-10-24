@@ -5,6 +5,7 @@ import { FURIGANA_MARKUP_RULE, normalizeFuriganaDeep } from '@/lib/furigana';
 import { logger } from '@/lib/logger';
 
 import { rateLimit } from '../_lib/rateLimit';
+import { rejectDemo } from '../_lib/rejectDemo';
 import { requireOrganizerAccount } from '../_lib/requireOrganizerAccount';
 import { splitFuriganaSafe } from '../_lib/splitFurigana';
 
@@ -23,6 +24,8 @@ export async function POST(req: NextRequest) {
 
   const orgCheck = await requireOrganizerAccount(req);
   if (orgCheck instanceof NextResponse) return orgCheck;
+  const demoCheck = rejectDemo(orgCheck);
+  if (demoCheck) return demoCheck;
 
   const body = await req.json().catch(() => null);
   const parsed = FuriganaSchema.safeParse(body);

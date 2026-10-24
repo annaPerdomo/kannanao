@@ -130,6 +130,7 @@ export interface DailyPlanInput {
   progress: CardProgress[];
   ttsReady: boolean;
   sentenceCount: number;
+  now?: Date;
 }
 
 function focusGoal(focus: FocusPick): GoalMode | null {
@@ -155,7 +156,13 @@ export function fitDaily(legs: ChainLeg[], budget: number): ChainLeg[] {
   return [...chosen].sort((a, b) => a - b).map((i) => legs[i]);
 }
 
-export function planDailyPractice({
+export interface DailyPlanDetail {
+  legs: ChainLeg[];
+  /** The ladder `planMixedPractice` produced, before `fitDaily` trimmed it to `legs`. */
+  offered: ChainLeg[];
+}
+
+export function planDailyPracticeDetailed({
   dueCount,
   kanaDue = false,
   kanaRow = null,
@@ -164,14 +171,15 @@ export function planDailyPractice({
   progress,
   ttsReady,
   sentenceCount,
-}: DailyPlanInput): ChainLeg[] {
+  now,
+}: DailyPlanInput): DailyPlanDetail {
   const legs: ChainLeg[] = [];
   if (dueCount > 0 || kanaDue) legs.push({ step: 'review', mode: 'review' });
   if (kanaRow) legs.push({ step: 'practice', mode: 'kana-journey', kanaSet: kanaRow });
-  if (!focus) return legs;
+  if (!focus) return { legs, offered: [] };
 
   const goal = focusGoal(focus);
-  const session = pickMixedSessionCards(cards, progress);
+  const session = pickMixedSessionCards(cards, progress, now);
   const sessionIds = session.map((c) => c.id);
   const mixed = planMixedPractice({
     support: deckSupport(session, {
@@ -190,7 +198,11 @@ export function planDailyPractice({
   // The goal leg plays the whole deck: the trimmed session slice can fall under
   // the server's mastery card floor and never complete the assignment.
   if (goal && cards.length > 0) legs.push({ step: 'goal', mode: goal, deckId: focus.deckId });
-  return legs;
+  return { legs, offered: mixed };
+}
+
+export function planDailyPractice(input: DailyPlanInput): ChainLeg[] {
+  return planDailyPracticeDetailed(input).legs;
 }
 
 export function estimateMinutes(

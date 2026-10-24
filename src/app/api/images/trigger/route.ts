@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { rateLimit } from '../../_lib/rateLimit';
+import { rejectDemo } from '../../_lib/rejectDemo';
 import { requireOrganizerAccount } from '../../_lib/requireOrganizerAccount';
 import { isUnsplashDownloadLocation, triggerDownload } from '../../_lib/unsplash';
 
@@ -12,6 +13,8 @@ export async function POST(req: NextRequest) {
 
   const orgCheck = await requireOrganizerAccount(req);
   if (orgCheck instanceof NextResponse) return orgCheck;
+  const demoCheck = rejectDemo(orgCheck);
+  if (demoCheck) return demoCheck;
 
   try {
     const { downloadLocation } = await req.json();

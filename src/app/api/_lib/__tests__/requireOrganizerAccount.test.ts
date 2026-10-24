@@ -118,13 +118,13 @@ describe('requireOrganizerAccount', () => {
     expect(body.error).toContain('not available for member');
   });
 
-  it('returns the profile for organizer accounts', async () => {
+  it('returns the profile for organizer accounts, isDemo false', async () => {
     const profile = { id: 'u1', username: 'organizer1', account_type: 'organizer' };
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
     mockSelectSingle.mockResolvedValue({ data: profile, error: null });
     const result = await requireOrganizerAccount(makeRequest('valid-token'));
     expect(result).not.toBeInstanceOf(NextResponse);
-    expect(result).toEqual(profile);
+    expect(result).toEqual({ ...profile, isDemo: false });
   });
 
   it('returns the profile when account_type is null (default organizer)', async () => {
@@ -133,6 +133,25 @@ describe('requireOrganizerAccount', () => {
     mockSelectSingle.mockResolvedValue({ data: profile, error: null });
     const result = await requireOrganizerAccount(makeRequest('valid-token'));
     expect(result).not.toBeInstanceOf(NextResponse);
-    expect(result).toEqual(profile);
+    expect(result).toEqual({ ...profile, isDemo: false });
+  });
+
+  it('sets isDemo from the verified JWT app_metadata, not the username', async () => {
+    const profile = { id: 'u1', username: 'demo-teacher', account_type: 'organizer' };
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'u1', app_metadata: { demo: true } } },
+      error: null,
+    });
+    mockSelectSingle.mockResolvedValue({ data: profile, error: null });
+    const result = await requireOrganizerAccount(makeRequest('valid-token'));
+    expect(result).toEqual({ ...profile, isDemo: true });
+  });
+
+  it('isDemo is false when the JWT carries no demo claim, even for a demo- username', async () => {
+    const profile = { id: 'u1', username: 'demo-teacher', account_type: 'organizer' };
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+    mockSelectSingle.mockResolvedValue({ data: profile, error: null });
+    const result = await requireOrganizerAccount(makeRequest('valid-token'));
+    expect(result).toEqual({ ...profile, isDemo: false });
   });
 });

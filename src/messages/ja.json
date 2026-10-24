@@ -1304,7 +1304,9 @@
         "quiz": "クイズ",
         "listen": "リスニング",
         "reading": "よみかた",
-        "kanjiMatch": "かんじペア"
+        "kanjiMatch": "かんじペア",
+        "endings": "おわりを えらぼう",
+        "kanaJourney": "かなをまなぶ"
       },
       "goalBoth": "{mode}で{accuracy}%",
       "goalAccuracyOnly": "{accuracy}%",
@@ -5802,5 +5804,57 @@
         "subtitle": "{name}とのおもいで · {levelName}"
       }
     }
+  },
+  "DemoLab": {
+    "title": "練習のしくみ",
+    "subtitle": "学ぶ人をえらんで、ことばに○か×をつけてみよう。あしたの練習がどう変わるか、アプリと同じしくみで見てみよう。",
+    "loading": "じゅんびちゅう…",
+    "personaPickerLabel": "学ぶ人をえらぶ",
+    "personas": {
+      "maya": "ほとんど毎日練習しているけど、週末のことばをよくまちがえる。",
+      "ken": "今週はお休みしていたので、きょうのレビューが多くなっている。",
+      "sora": "はじめての練習。きょうのことばは全部はじめて会うことば。"
+    },
+    "todayHeading": "きょうの練習",
+    "tomorrowHeading": "あしたの練習",
+    "leftOut": "時間をみじかくするためにやらないもの：{modes}",
+    "newBadge": "あたらしい",
+    "notInTomorrowsPlan": "あしたはやらないもの：{mode}",
+    "reviewWordsHeading": "レビューのことば",
+    "sessionWordsHeading": "練習のことば",
+    "finish": "きょうの練習をおわる",
+    "finishNote": "まちがえたことばは、きょう出てくるたびにまちがえたままになるよ。",
+    "startOver": "もう一回やる",
+    "answerRight": "できた",
+    "answerWrong": "まちがえた",
+    "wordAria": "{word}をできた・まちがえたでえらぶ",
+    "changedHeading": "かわったこと",
+    "changeLineRight": "{word}：できた → つぎは{time}後に練習 · {strength}",
+    "changeLineWrong": "{word}：まちがえた → きょうの練習が終わるまでにもう一回聞かれて、そのあと{time}後にもどってくる · {strength}",
+    "missedNote": "もう一回聞かれなければ、{n}分後にもどってくるよ。",
+    "time": {
+      "minute": "{value}分",
+      "hour": "{value}時間",
+      "day": "{value}日"
+    },
+    "teacherHeading": "先生から見えること",
+    "teacherHighlightUp": "いま、むずかしくなった",
+    "teacherHighlightDown": "むずかしさがへった",
+    "reasons": {
+      "review": "きょう{count}こ、レビューがある",
+      "reviewCapRaised": "きょう{count}こレビューがあって、たくさんあるときはレビューが{cap}こまでふえる",
+      "kana": "あたらしいひらがな・カタカナのれつがある",
+      "newWords": "あたらしいことばが{count}こ",
+      "recall": "{count}こを見ないで答える練習",
+      "strongWords": "{count}こが、文づくりや穴うめにちょうせんできるくらい強くなった",
+      "sentences": "れいぶんが{min}こ以上あるので、文づくりができる",
+      "endings": "ことばのかたちを変える練習が{count}こ",
+      "assignment": "先生からのきょうの目標",
+      "practice": "ことばをわすれないための練習"
+    }
+  },
+  "Errors": {
+    "demoNoAi": "デモアカウントではAIツールを使えません。登録してお試しください。",
+    "demoNoInvites": "デモアカウントでは招待できません。登録してご自分のグループを作りましょう。"
   }
 }

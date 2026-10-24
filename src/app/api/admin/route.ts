@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { aggregateModeBreakdown } from '@/components/Stats/constants';
 import { isAdminEmail } from '@/lib/admin';
 import { aggregateMasteryByUser } from '@/lib/cardStrength';
+import { isDemoUsername } from '@/lib/demo/identity';
 import { logger } from '@/lib/logger';
 
 import { isGroupLearner } from '../_lib/groupRole';
@@ -98,7 +99,8 @@ export async function GET(req: Request) {
       .select('deck_id, sentence_type, meaning_peek_count, created_at'),
   ]);
 
-  const profiles = profilesRes.data ?? [];
+  const allProfiles = profilesRes.data ?? [];
+  const profiles = allProfiles.filter((p) => !isDemoUsername(p.username));
   const decks = decksRes.data ?? [];
   const cards = cardsRes.data ?? [];
   const todos = todosRes.data ?? [];
@@ -616,7 +618,7 @@ export async function POST(req: Request) {
     .eq('username', username)
     .maybeSingle();
 
-  if (existing) {
+  if (existing || isDemoUsername(username)) {
     return NextResponse.json({ error: 'Username is already taken.' }, { status: 409 });
   }
 

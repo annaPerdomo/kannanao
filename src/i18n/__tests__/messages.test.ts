@@ -3,7 +3,13 @@ import path from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { LANDING_NAMESPACES, landingMessagesFor, landingSeoFor, messagesFor } from '../messages';
+import {
+  demoLabMessagesFor,
+  LANDING_NAMESPACES,
+  landingMessagesFor,
+  landingSeoFor,
+  messagesFor,
+} from '../messages';
 
 // Stand in for a half-translated ja.json: one plain key, one array. The array is
 // the interesting one — see the arrayMerge test below.
@@ -64,6 +70,31 @@ describe('landingMessagesFor', () => {
   it('is a fraction of the full message payload', () => {
     const full = JSON.stringify(messagesFor('en')).length;
     expect(JSON.stringify(landingMessagesFor('en')).length).toBeLessThan(full * 0.6);
+  });
+});
+
+describe('demoLabMessagesFor', () => {
+  it('ships the landing namespaces plus DemoLab and a trimmed Group', () => {
+    expect(Object.keys(demoLabMessagesFor('en')).sort()).toEqual(
+      [...LANDING_NAMESPACES, 'DemoLab', 'Group'].sort(),
+    );
+  });
+
+  it('keeps only the Group subtrees DemoLab reads', () => {
+    const group = demoLabMessagesFor('en').Group;
+    expect(Object.keys(group).sort()).toEqual(['goalPicker', 'handoutDetail']);
+    expect(Object.keys(group.handoutDetail).sort()).toEqual([
+      'seenOf',
+      'strength',
+      'strongCount',
+      'trickyCount',
+    ]);
+    expect(Object.keys(group.goalPicker)).toEqual(['modes']);
+  });
+
+  it('is a fraction of the full message payload', () => {
+    const full = JSON.stringify(messagesFor('en')).length;
+    expect(JSON.stringify(demoLabMessagesFor('en')).length).toBeLessThan(full * 0.6);
   });
 });
 
