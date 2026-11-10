@@ -13,6 +13,7 @@ import { sb } from '@/lib/supabase';
 export interface HandoutWords {
   deck: { id: string; name: string; emoji: string | null };
   learnerCount: number;
+  kanjiPractice?: { enabled: boolean; classUsesKanji: boolean };
   words: GroupWordInsight[];
   learner: LearnerWordInsight[] | null;
   /** Present on the group view (no memberId). */

@@ -285,6 +285,8 @@ export function HandoutPage({ groupId, deckId }: HandoutPageProps) {
         deckId={deckId}
         groupName={groupName}
         wordCount={cards.length}
+        cards={cards}
+        kanjiPractice={words.data?.kanjiPractice}
         kanaSets={week.kanaSets}
         onDone={(result) => void handleHandOutDone(result)}
       />

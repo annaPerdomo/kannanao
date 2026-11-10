@@ -44,6 +44,7 @@ interface ReviewStepProps {
   accuracy: number | null;
   mode: GoalMode | null;
   targetLevel: JlptLevel;
+  unavailableModes?: readonly GoalMode[];
   applying: boolean;
   /** True after a failed apply: some decks may exist, so include ticks are frozen. */
   ticksLocked: boolean;
@@ -73,6 +74,7 @@ export function ReviewStep({
   accuracy,
   mode,
   targetLevel,
+  unavailableModes,
   applying,
   ticksLocked,
   retryingIndex,
@@ -268,6 +270,7 @@ export function ReviewStep({
             mode={mode}
             onAccuracyChange={onAccuracyChange}
             onModeChange={onModeChange}
+            unavailableModes={unavailableModes}
           />
 
           <Typography sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>

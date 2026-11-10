@@ -20,6 +20,7 @@ vi.mock('@/services/api', () => ({
   buildLessonPlan: (...args: unknown[]) => buildLessonPlanMock(...args),
   applyLessonPlan: (...args: unknown[]) => applyLessonPlanMock(...args),
   uploadLessonDocument: (...args: unknown[]) => uploadLessonDocumentMock(...args),
+  fetchGroupKanjiInUse: () => Promise.resolve(false),
   fetchImage: (...args: unknown[]) => fetchImageMock(...args),
   encodeUnsplashUrl: (r: { url: string }) => r.url,
   decodeUnsplashAttribution: vi.fn(() => null),

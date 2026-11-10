@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { StyledDialog } from '@/components/StyledDialog';
 import type { GroupMember } from '@/hooks/useGroup';
 import { type GoalMode, isGoalMode } from '@/lib/assignmentMastery';
+import { KANJI_GOAL_MODES } from '@/lib/kanjiPractice';
 import { DEFAULT_BASELINE } from '@/lib/wordProgress';
 
 import { AssignmentGoalPicker } from './AssignmentGoalPicker';
@@ -97,7 +98,7 @@ export function CreateAssignmentDialog({
   // A kanji goal on a deck that hasn't unlocked Reading could never be met.
   const readingUnavailable: GoalMode[] = decks.find((d) => d.id === selectedDeck)?.readingPractice
     ? []
-    : ['reading', 'kanji-match', 'reading-pick'];
+    : [...KANJI_GOAL_MODES];
   // Drop a stale kanji goal when the organizer switches to a locked deck, and
   // any mode goal on switching to kana — the API rejects that combination.
   if (goalMode && (isKana || readingUnavailable.includes(goalMode))) {
