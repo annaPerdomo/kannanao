@@ -199,6 +199,10 @@
         "label": "Kanji Pairs",
         "description": "Match each word with how it's read"
       },
+      "readingPick": {
+        "label": "Pick the Reading",
+        "description": "See the kanji, pick how it is spelled"
+      },
       "quiz": {
         "label": "Quiz",
         "description": "Show what you know — one try each"
@@ -455,6 +459,7 @@
       "deckNotFound": "Deck not found.",
       "cardsInDeckLabel": "Cards in this deck ({count})",
       "reorderButton": "Reorder",
+      "printButton": "Print",
       "addCardsButton": "Add Cards",
       "reorderBannerLabel": "Drag and drop cards to reorder. Click Done when finished.",
       "noCardsMemberMessage": "No cards yet — your organizer will add them soon!",
@@ -773,6 +778,7 @@
         "listen": "Listen",
         "reading": "Reading",
         "kanjiMatch": "Kanji Pairs",
+        "readingPick": "Pick the Reading",
         "endings": "Pick the ending"
       }
     },
@@ -896,6 +902,11 @@
       "removeLastCharacter": "Remove the last character",
       "placeCharacterAria": "Add {character}",
       "seeResults": "See Results"
+    },
+    "readingPickMode": {
+      "prompt": "WHICH ONE IS RIGHT?",
+      "calendarPrompt": "WHICH DAY IS IN THE BOX?",
+      "calendarAria": "A calendar with the column for {word} boxed"
     },
     "roundTransition": {
       "allReviewed": "All reviewed!",
@@ -1305,6 +1316,7 @@
         "listen": "Listen",
         "reading": "Reading",
         "kanjiMatch": "Kanji Pairs",
+        "readingPick": "Pick the Reading",
         "endings": "Pick the Ending",
         "kanaJourney": "Learn Kana"
       },
@@ -1904,6 +1916,69 @@
       "sheetsBlankToggle": "Blank grid to write in",
       "sheetsKanaButton": "Kana chart",
       "sheetsGroupButton": "Group progress chart",
+      "sheetsCalendarTitle": "Months and days of the week",
+      "sheetsCalendarHint": "Separate packets for the months (一月–十二月) and the days of the week (日–土): a chart, tracing and mixed practice. Every print mixes the questions differently.",
+      "sheetsCalendarLearn": "Chart and tracing pages",
+      "sheetsCalendarTest": "Practice pages",
+      "sheetsCalendarAnswerKey": "Answer key",
+      "sheetsCalendarKanaYou": "Write 月よう日 instead of 月曜日",
+      "sheetsCalendarMonthsButton": "Print months packet",
+      "sheetsCalendarDaysButton": "Print days packet",
+      "sheetsCalendarError": "The pack could not be made. Please try again.",
+      "calendarPack": {
+        "learnHeading": "Learn them",
+        "learnHint": "Read each one out loud. The underlined part is the part that changes.",
+        "monthsHeading": "Months",
+        "weekdaysHeading": "Days of the week",
+        "trickyNote": "★ Careful: 四月 is しがつ (not よん), 七月 is しちがつ (not なな), 九月 is くがつ (not きゅう).",
+        "traceHeading": "Trace, then write",
+        "traceHint": "Trace the grey letters, then write the word yourself. Say it out loud as you write.",
+        "kanjiHeading": "Write the kanji",
+        "kanjiHint": "Follow the numbers for the stroke order. Trace three, then write on your own.",
+        "judgeHeading": "Right or wrong?",
+        "judgeHint": "Circle ○ if the spelling is right, × if it is wrong. Fix the wrong ones on the line.",
+        "judgeRight": "correct",
+        "gapHeading": "Missing letter",
+        "gapHint": "One hiragana is missing from each word. Write it in the bold box.",
+        "matchHeading": "Draw a line",
+        "matchHint": "Join each kanji to how it is read.",
+        "orderHeading": "What comes next?",
+        "orderHint": "Fill in the ones that are missing.",
+        "myCalendarHeading": "My calendar",
+        "myCalendarHint": "Write the day kanji across the top, starting with Sunday. Then circle today and finish the sentence.",
+        "aboutHeading": "About me",
+        "aboutHint": "Answer in hiragana.",
+        "aboutGlossesDays": [
+          "What day is it today?",
+          "What day is it tomorrow?",
+          "What day was it yesterday?"
+        ],
+        "aboutGlossesMonths": [
+          "What month is it now?",
+          "What month is next month?",
+          "What month is your birthday?"
+        ],
+        "kanjiWriteHeading": "Write it in kanji",
+        "kanjiWriteHint": "Read the word, then write its kanji in the box.",
+        "writeHeading": "Write the reading",
+        "writeHint": "Write how to read it in hiragana.",
+        "numbersHeading": "One to ten",
+        "numbersHint": "Top row: write the kanji in each box. Bottom row: write how each kanji is read.",
+        "nextHeading": "What day comes next?",
+        "nextHint": "Write the day that comes after.",
+        "pictures": ["sun", "moon", "fire", "water", "tree", "gold", "earth"]
+      },
+      "sheetsReadingCheckTitle": "Reading check",
+      "sheetsReadingCheckHint": "Practice for this deck's kanji words: spot the wrong spelling, fill in the missing letter, then write the reading.",
+      "sheetsReadingCheckButton": "Print reading check",
+      "sheetsReadingCheckEmpty": "No words here are written with kanji.",
+      "readingCheckJudgeHeading": "Right or wrong?",
+      "readingCheckJudgeHint": "Circle ○ if the spelling is right, × if it is wrong. Fix the wrong ones on the line.",
+      "readingCheckJudgeRight": "correct",
+      "readingCheckGapHeading": "Missing letter",
+      "readingCheckGapHint": "One hiragana is missing from each word. Write it in the bold box.",
+      "readingCheckWriteHeading": "Write the reading",
+      "readingCheckWriteHint": "Write how to read it in hiragana.",
       "sheetsKanjiButton": "Kanji writing sheet",
       "sheetsKanaTitle": "Kana chart",
       "sheetsKanaHint": "Read each column downwards: a, i, u, e, o.",
