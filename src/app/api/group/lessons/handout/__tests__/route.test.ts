@@ -340,6 +340,33 @@ describe('POST /api/group/lessons/handout', () => {
     );
   });
 
+  it('sets kanji practice on the deck when the hand-out carries a choice', async () => {
+    const res = await POST(
+      postRequest({ groupId: 'g1', deckId: 'd1', dueDate: '2026-10-20', kanjiPractice: true }),
+    );
+    expect(res.status).toBe(200);
+    expect(updateCalls).toContainEqual({ table: 'decks', updates: { reading_practice: true } });
+  });
+
+  it('500s before assigning when the kanji setting cannot be saved', async () => {
+    setTable('decks', { data: { id: 'd1', name: 'Food' }, error: { message: 'boom' } });
+    const res = await POST(
+      postRequest({ groupId: 'g1', deckId: 'd1', dueDate: '2026-10-20', kanjiPractice: true }),
+    );
+    expect(res.status).toBe(500);
+    expect(assignHandoutMock).not.toHaveBeenCalled();
+  });
+
+  it('leaves kanji practice alone when the hand-out carries no choice', async () => {
+    await POST(postRequest({ groupId: 'g1', deckId: 'd1', dueDate: '2026-10-20' }));
+    expect(updateCalls.filter((call) => call.table === 'decks')).toEqual([]);
+  });
+
+  it('400s on a kanjiPractice that is not a boolean', async () => {
+    const res = await POST(postRequest({ groupId: 'g1', deckId: 'd1', kanjiPractice: 'on' }));
+    expect(res.status).toBe(400);
+  });
+
   it('does not fail the request when sentence generation fails', async () => {
     generateDeckSentencesMock.mockResolvedValue({ status: 'failed', error: 'no cards' });
     const originalKey = process.env.GEMINI_API_KEY;

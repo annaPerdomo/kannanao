@@ -67,6 +67,8 @@ export interface HandOutLessonPayload {
   requiredMode?: string | null;
   baselineAccuracy?: number;
   withSentences?: boolean;
+  /** Omitted leaves the deck's kanji practice setting as it is. */
+  kanjiPractice?: boolean;
 }
 
 export interface HandOutLessonResult {

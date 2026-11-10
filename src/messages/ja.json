@@ -2213,6 +2213,9 @@
       "availableOnLabel": "公開日",
       "withSentences": "AIで練習文を追加",
       "withSentencesHint": "練習で単語ごとに短い文が表示されます。",
+      "kanjiPractice": "漢字の読み練習",
+      "kanjiPracticeHint": "この単語の漢字の読み方と書き方を練習します。",
+      "kanjiPracticeAutoHint": "オンにしました — このグループは漢字を練習中です。",
       "soundsIncluded": "ふくまれる文字：{list}",
       "handOutConfirm": "{count}人に配る",
       "handedOutToast": "配りました！学ぶ人の練習に表示されます。",
@@ -2402,6 +2405,8 @@
     },
     "readingHiraganaLabel": "ひらがなは よめますか？",
     "readingKatakanaLabel": "カタカナは よめますか？",
+    "readingKanjiLabel": "漢字を ならっていますか？",
+    "readingKanjiHint": "「まだ」をえらぶと、漢字の練習は出ません。",
     "readingAnswer": {
       "not-yet": "まだ",
       "learning": "れんしゅうちゅう",

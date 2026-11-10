@@ -34,6 +34,7 @@ export interface ApplyPlanArgs {
   level?: string;
   styleNotes?: string;
   kanaWeeks?: { setId: string; dueDate: string | null }[];
+  kanjiPractice?: boolean;
 }
 
 export function useLessonPlan() {

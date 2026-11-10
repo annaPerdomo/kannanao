@@ -161,6 +161,8 @@ export function AskStep({
           <ReadingQuestion
             value={form.readingLevel}
             onChange={(readingLevel) => onChange({ readingLevel })}
+            kanji={form.kanjiLevel}
+            onKanjiChange={(kanjiLevel) => onChange({ kanjiLevel })}
           />
 
           <TextField

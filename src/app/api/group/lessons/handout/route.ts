@@ -173,6 +173,9 @@ export async function POST(req: NextRequest) {
   if (b.note != null && typeof b.note !== 'string') {
     return NextResponse.json({ error: 'note must be a string.' }, { status: 400 });
   }
+  if (b.kanjiPractice !== undefined && typeof b.kanjiPractice !== 'boolean') {
+    return NextResponse.json({ error: 'kanjiPractice must be a boolean.' }, { status: 400 });
+  }
   const note = typeof b.note === 'string' ? b.note.trim().slice(0, HANDOUT_NOTE_MAX) || null : null;
 
   const access = await requireGroupAccess(req, groupId);
@@ -218,6 +221,22 @@ export async function POST(req: NextRequest) {
       { error: 'This lesson has already been handed out.' },
       { status: 409 },
     );
+  }
+
+  if (typeof b.kanjiPractice === 'boolean') {
+    const { error: kanjiError } = await sb
+      .from('decks')
+      .update({ reading_practice: b.kanjiPractice })
+      .eq('id', deckId)
+      .eq('user_id', organizer.id);
+    if (kanjiError) {
+      logger.error('Failed to set kanji practice on hand-out', {
+        route: HANDOUT_ROUTE,
+        deckId,
+        error: (kanjiError as { message?: string }).message,
+      });
+      return NextResponse.json({ error: 'Failed to hand out the lesson.' }, { status: 500 });
+    }
   }
 
   const { error: assignError } = await assignHandout(sb, {

@@ -1,10 +1,10 @@
 import type { LessonPlan, PlanCard } from '@/types/lessonPlan';
 
+import { isKanjiWord } from './kanjiPractice';
 import { escapeHtml } from './lessonPrintable';
 import { brandHeaderHtml, printDocumentHtml } from './printBrand';
 import { printableDecks } from './printPlan';
 import { readingDistractors, splitReading } from './readingConfusions';
-import { isPureKana } from './reviewGames';
 import { hashSeed, seededShuffle } from './seededRandom';
 
 /** Textbook faces show handwritten letter shapes; the brand's rounded face does not. */
@@ -146,15 +146,12 @@ export function keyHtml(heading: string, key: Section['key']): string {
   return `<h3>${escapeHtml(heading)}</h3><p class="key">${line}</p>`;
 }
 
-const KANJI = /[㐀-䶿一-鿿]/;
 export const MAX_CHECK_WORDS = 12;
 
 function checkCards(cards: PlanCard[]): PlanCard[] {
   const seen = new Set<string>();
   return cards.filter((card) => {
-    const reading = card.reading.trim();
-    if (!KANJI.test(card.word) || !isPureKana(reading) || reading === card.word) return false;
-    if (seen.has(card.word)) return false;
+    if (!isKanjiWord(card) || seen.has(card.word)) return false;
     seen.add(card.word);
     return true;
   });

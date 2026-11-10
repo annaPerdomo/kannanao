@@ -1,14 +1,12 @@
 'use client';
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { AssignmentGoalPicker } from '@/components/Group/AssignmentGoalPicker';
 import { todayIso } from '@/components/Group/dueDate';
@@ -16,10 +14,14 @@ import { StyledDialog } from '@/components/StyledDialog';
 import { useGroupMembers } from '@/hooks/useGroup';
 import { useLessonEdits } from '@/hooks/useLessonEdits';
 import type { GoalMode } from '@/lib/assignmentMastery';
+import { hasKanjiWords, KANJI_GOAL_MODES, suggestKanjiPractice } from '@/lib/kanjiPractice';
 import { kanaSetLabel } from '@/lib/lessonKana';
 import { HANDOUT_NOTE_MAX, nextFriday } from '@/lib/lessonUnits';
 import { DEFAULT_BASELINE } from '@/lib/wordProgress';
+import type { Flashcard } from '@/types/flashcard';
 import type { HandOutLessonResult } from '@/types/lessonUnit';
+
+import { SwitchRow } from './SwitchRow';
 
 interface HandOutDialogProps {
   open: boolean;
@@ -28,6 +30,8 @@ interface HandOutDialogProps {
   deckId: string;
   groupName: string;
   wordCount: number;
+  cards: Flashcard[];
+  kanjiPractice?: { enabled: boolean; classUsesKanji: boolean };
   kanaSets: string[];
   onDone: (result: HandOutLessonResult) => void;
 }
@@ -39,6 +43,8 @@ export function HandOutDialog({
   deckId,
   groupName,
   wordCount,
+  cards,
+  kanjiPractice,
   kanaSets,
   onDone,
 }: HandOutDialogProps) {
@@ -54,6 +60,19 @@ export function HandOutDialog({
   const [mode, setMode] = useState<GoalMode | null>(null);
   const [baselineAccuracy, setBaselineAccuracy] = useState<number>(DEFAULT_BASELINE);
 
+  const [kanjiChoice, setKanjiChoice] = useState<boolean | null>(null);
+  const kanjiAvailable = useMemo(() => hasKanjiWords(cards), [cards]);
+  const kanjiSuggested = useMemo(
+    () =>
+      kanjiPractice?.enabled === true ||
+      suggestKanjiPractice({ cards, classUsesKanji: kanjiPractice?.classUsesKanji === true }),
+    [cards, kanjiPractice],
+  );
+  const kanjiOn = kanjiAvailable && (kanjiChoice ?? kanjiSuggested);
+  const kanjiFromGroup =
+    kanjiOn && kanjiChoice === null && !kanjiPractice?.enabled && !!kanjiPractice?.classUsesKanji;
+  const goalMode = mode && !kanjiOn && KANJI_GOAL_MODES.includes(mode) ? null : mode;
+
   const learnerCount = members.length;
   const datesOutOfOrder = Boolean(availableOn && dueDate && availableOn > dueDate);
 
@@ -65,9 +84,10 @@ export function HandOutDialog({
       availableOn: availableOn || null,
       note: note.trim() || null,
       requiredAccuracy: accuracy,
-      requiredMode: mode,
+      requiredMode: goalMode,
       baselineAccuracy,
       withSentences,
+      kanjiPractice: kanjiAvailable ? kanjiOn : undefined,
     });
     if (result) onDone(result);
   };
@@ -138,27 +158,27 @@ export function HandOutDialog({
         />
         <AssignmentGoalPicker
           accuracy={accuracy}
-          mode={mode}
+          mode={goalMode}
           onAccuracyChange={setAccuracy}
           onModeChange={setMode}
           baselineAccuracy={baselineAccuracy}
           onBaselineChange={setBaselineAccuracy}
+          unavailableModes={kanjiOn ? undefined : KANJI_GOAL_MODES}
         />
-        <Stack direction="row" sx={{ alignItems: 'flex-start', gap: 1 }}>
-          <Switch
-            checked={withSentences}
-            onChange={(e) => setWithSentences(e.target.checked)}
-            slotProps={{ input: { 'aria-label': t('withSentences') } }}
+        <SwitchRow
+          checked={withSentences}
+          onChange={setWithSentences}
+          label={t('withSentences')}
+          hint={t('withSentencesHint')}
+        />
+        {kanjiAvailable && (
+          <SwitchRow
+            checked={kanjiOn}
+            onChange={setKanjiChoice}
+            label={t('kanjiPractice')}
+            hint={t(kanjiFromGroup ? 'kanjiPracticeAutoHint' : 'kanjiPracticeHint')}
           />
-          <Box sx={{ pt: 0.75 }}>
-            <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: 'text.primary' }}>
-              {t('withSentences')}
-            </Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-              {t('withSentencesHint')}
-            </Typography>
-          </Box>
-        </Stack>
+        )}
         {kanaSets.length > 0 && (
           <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary' }}>
             {t('soundsIncluded', { list: kanaSets.map(kanaSetLabel).join(' · ') })}

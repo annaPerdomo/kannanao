@@ -14,11 +14,13 @@ global.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
 const buildLessonPlanMock = vi.fn();
 const applyLessonPlanMock = vi.fn();
 const uploadLessonDocumentMock = vi.fn();
+const fetchGroupKanjiInUseMock = vi.fn();
 
 vi.mock('@/services/api', () => ({
   buildLessonPlan: (...args: unknown[]) => buildLessonPlanMock(...args),
   applyLessonPlan: (...args: unknown[]) => applyLessonPlanMock(...args),
   uploadLessonDocument: (...args: unknown[]) => uploadLessonDocumentMock(...args),
+  fetchGroupKanjiInUse: (...args: unknown[]) => fetchGroupKanjiInUseMock(...args),
   fetchImage: vi.fn(),
   encodeUnsplashUrl: vi.fn(),
   decodeUnsplashAttribution: vi.fn(() => null),
@@ -84,6 +86,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   buildLessonPlanMock.mockResolvedValue({ plan: PLAN });
   applyLessonPlanMock.mockResolvedValue({ results: [{ name: 'Food words', status: 'created' }] });
+  fetchGroupKanjiInUseMock.mockResolvedValue(false);
   let uploads = 0;
   uploadLessonDocumentMock.mockImplementation(() =>
     Promise.resolve(`org1/upload-${(uploads += 1)}.txt`),
@@ -233,5 +236,27 @@ describe('LessonSetBuilder', () => {
     await waitFor(() => expect(buildLessonPlanMock).toHaveBeenCalled());
 
     expect(buildLessonPlanMock.mock.calls[0][0].styleNotes).toBe(long);
+  });
+
+  async function buildAndApply() {
+    typeGoal();
+    fireEvent.click(screen.getByRole('button', { name: /build the plan/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /create decks & hand out/i }));
+    await waitFor(() => expect(applyLessonPlanMock).toHaveBeenCalled());
+    return applyLessonPlanMock.mock.calls[0][0];
+  }
+
+  it('keeps kanji practice off for an N5 group with no kanji history', async () => {
+    setup();
+    expect((await buildAndApply()).kanjiPractice).toBe(false);
+  });
+
+  it('turns kanji practice on, before building, for a group that already practises kanji', async () => {
+    fetchGroupKanjiInUseMock.mockResolvedValue(true);
+    setup();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/are they learning kanji/i)).toHaveTextContent('Learning'),
+    );
+    expect((await buildAndApply()).kanjiPractice).toBe(true);
   });
 });

@@ -12,6 +12,10 @@ vi.mock('@/app/api/group/_lib/requireGroupAccess', () => ({
   requireGroupAccess: (...args: unknown[]) => requireGroupAccessMock(...args),
 }));
 
+const groupUsesKanjiPracticeMock = vi.fn();
+vi.mock('@/app/api/group/_lib/groupKanjiPractice', () => ({
+  groupUsesKanjiPractice: (...args: unknown[]) => groupUsesKanjiPracticeMock(...args),
+}));
 vi.mock('@/app/api/group/_lib/membership', () => ({
   memberIdsFor: (...args: unknown[]) => memberIdsForMock(...args),
 }));
@@ -83,6 +87,7 @@ describe('GET /api/group/lessons/words', () => {
     memberIdsForMock.mockResolvedValue(['m1', 'm2']);
     setTable('decks', { id: 'd1', name: 'Food', emoji: '🍜' });
     setTable('cards', []);
+    groupUsesKanjiPracticeMock.mockResolvedValue(false);
     setTable('card_progress', []);
   });
 
@@ -210,6 +215,24 @@ describe('GET /api/group/lessons/words', () => {
       }),
       expect.objectContaining({ id: 'm2', name: 'ken', assigned: false, unseen: 2 }),
     ]);
+  });
+
+  it("reports the deck's kanji practice setting and whether the group already uses it", async () => {
+    setTable('decks', { id: 'd1', name: 'Food', emoji: '🍜', reading_practice: true });
+    groupUsesKanjiPracticeMock.mockResolvedValue(true);
+    const body = await (await GET(request('groupId=g1&deckId=d1'))).json();
+    expect(body.kanjiPractice).toEqual({ enabled: true, classUsesKanji: true });
+    expect(groupUsesKanjiPracticeMock).toHaveBeenCalledWith(expect.anything(), {
+      organizerId: 'org1',
+      groupId: 'g1',
+    });
+  });
+
+  it('still returns the words when the kanji lookup fails', async () => {
+    groupUsesKanjiPracticeMock.mockRejectedValue(new Error('boom'));
+    const res = await GET(request('groupId=g1&deckId=d1'));
+    expect(res.status).toBe(200);
+    expect((await res.json()).kanjiPractice).toEqual({ enabled: false, classUsesKanji: false });
   });
 
   it('leaves learners null on the one-learner view', async () => {

@@ -15,6 +15,7 @@ import { invalidateApiCache } from '@/lib/apiCache';
 import type { GoalMode } from '@/lib/assignmentMastery';
 import { setCharacters } from '@/lib/kanaCurriculum';
 import { prefillReadingLevelAnswer } from '@/lib/kanaGaps';
+import { KANJI_GOAL_MODES } from '@/lib/kanjiPractice';
 import { DEFAULT_LEVEL } from '@/lib/lessonPrompts';
 import type { PlanDeck } from '@/types/lessonPlan';
 
@@ -22,6 +23,7 @@ import { AskStep } from './AskStep';
 import {
   DEFAULT_CARDS_PER_DECK,
   DEFAULT_WEEKS,
+  defaultKanjiLevel,
   defaultReadingLevel,
   effectiveStyleNotes,
   type LessonSetForm,
@@ -30,6 +32,7 @@ import {
 import { PrintButtons } from './PrintButtons';
 import { ReviewStep } from './ReviewStep';
 import { useDeckRedraw } from './useDeckRedraw';
+import { useKanjiAnswer } from './useKanjiAnswer';
 
 interface LessonSetBuilderProps {
   groups: Group[];
@@ -49,6 +52,7 @@ const EMPTY_FORM: LessonSetForm = {
   withSentences: true,
   generateImages: false,
   readingLevel: defaultReadingLevel(DEFAULT_LEVEL),
+  kanjiLevel: defaultKanjiLevel(DEFAULT_LEVEL),
 };
 
 /**
@@ -85,9 +89,12 @@ export function LessonSetBuilder({
   } = useLessonPlan();
 
   const [form, setForm] = useState<LessonSetForm>(EMPTY_FORM);
+  const withKanjiAnswer = useKanjiAnswer(groupId, setForm);
   const [dueDate, setDueDate] = useState(() => nextSunday());
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [mode, setMode] = useState<GoalMode | null>(null);
+  const kanjiOff = form.kanjiLevel === 'not-yet';
+  const goalMode = mode && kanjiOff && KANJI_GOAL_MODES.includes(mode) ? null : mode;
   const [skippedSoundWeeks, setSkippedSoundWeeks] = useState<number[]>([]);
   const [companionRows, setCompanionRows] = useState<{ setId: string; dueDate: string }[]>([]);
 
@@ -207,7 +214,8 @@ export function LessonSetBuilder({
           form={form}
           onGroupChange={onGroupChange}
           hideGroupSelect={hideGroupSelect}
-          onChange={(patch) => {
+          onChange={(change) => {
+            const patch = withKanjiAnswer(change);
             if (patch.readingLevel) setReadingAnswered(true);
             // The level is the only signal until the educator answers, so it
             // still moves the answer with it.
@@ -244,8 +252,9 @@ export function LessonSetBuilder({
           skippedSoundWeeks={skippedSoundWeeks}
           dueDate={dueDate}
           accuracy={accuracy}
-          mode={mode}
+          mode={goalMode}
           targetLevel={form.level}
+          unavailableModes={kanjiOff ? KANJI_GOAL_MODES : undefined}
           applying={applying}
           ticksLocked={applyFailed}
           retryingIndex={retryingIndex}
@@ -262,11 +271,12 @@ export function LessonSetBuilder({
               groupId,
               firstDueDate: dueDate,
               requiredAccuracy: accuracy,
-              requiredMode: mode,
+              requiredMode: goalMode,
               withSentences: form.withSentences,
               level: form.level,
               styleNotes: effectiveStyleNotes(form),
               kanaWeeks: companionRows,
+              kanjiPractice: !kanjiOff,
             })
           }
           onStartOver={reset}

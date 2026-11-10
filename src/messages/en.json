@@ -2217,6 +2217,9 @@
       "availableOnLabel": "Opens on",
       "withSentences": "Add practice sentences with AI",
       "withSentencesHint": "Learners see one short sentence per word in Practice.",
+      "kanjiPractice": "Kanji reading practice",
+      "kanjiPracticeHint": "Learners practise reading and spelling the kanji in these words.",
+      "kanjiPracticeAutoHint": "Turned on for you — this group is already practising kanji.",
       "soundsIncluded": "Sounds included: {list}",
       "handOutConfirm": "Hand out to {count, plural, one {# learner} other {# learners}}",
       "handedOutToast": "Handed out! Learners will see it in Practice.",
@@ -2412,6 +2415,8 @@
     },
     "readingHiraganaLabel": "Can they read hiragana?",
     "readingKatakanaLabel": "Can they read katakana?",
+    "readingKanjiLabel": "Are they learning kanji?",
+    "readingKanjiHint": "\"Not yet\" keeps kanji exercises out of these lessons.",
     "readingAnswer": {
       "not-yet": "Not yet",
       "learning": "Learning",

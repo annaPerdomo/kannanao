@@ -13,6 +13,7 @@ vi.mock('@/hooks/useGroup', () => ({
 
 import { todayIso } from '@/components/Group/dueDate';
 import { nextFriday } from '@/lib/lessonUnits';
+import type { Flashcard } from '@/types/flashcard';
 
 import { HandOutDialog } from '../HandOutDialog';
 
@@ -32,6 +33,7 @@ describe('HandOutDialog', () => {
         deckId="d2"
         groupName="Tuesday Club"
         wordCount={3}
+        cards={[]}
         kanaSets={[]}
         onDone={vi.fn()}
       />,
@@ -50,6 +52,7 @@ describe('HandOutDialog', () => {
         deckId="d2"
         groupName="Tuesday Club"
         wordCount={3}
+        cards={[]}
         kanaSets={['hira-a']}
         onDone={onDone}
       />,
@@ -87,6 +90,7 @@ describe('HandOutDialog', () => {
         deckId="d2"
         groupName="Tuesday Club"
         wordCount={3}
+        cards={[]}
         kanaSets={[]}
         onDone={vi.fn()}
       />,
@@ -104,6 +108,7 @@ describe('HandOutDialog', () => {
         deckId="d2"
         groupName="Tuesday Club"
         wordCount={3}
+        cards={[]}
         kanaSets={[]}
         onDone={vi.fn()}
       />,
@@ -120,6 +125,7 @@ describe('HandOutDialog', () => {
         deckId="d2"
         groupName="Tuesday Club"
         wordCount={3}
+        cards={[]}
         kanaSets={[]}
         onDone={vi.fn()}
       />,
@@ -145,6 +151,7 @@ describe('HandOutDialog', () => {
         deckId="d2"
         groupName="Tuesday Club"
         wordCount={3}
+        cards={[]}
         kanaSets={[]}
         onDone={onDone}
       />,
@@ -152,6 +159,71 @@ describe('HandOutDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Hand out to 2 learners' }));
     await vi.waitFor(() =>
       expect(onDone).toHaveBeenCalledWith(expect.objectContaining({ kanaFailed: ['hira-ka'] })),
+    );
+  });
+
+  const KANJI_CARD = {
+    id: 'c1',
+    word: '月よう日',
+    reading: 'げつようび',
+    meaning: 'Monday',
+    mainViewMode: 'hiragana',
+  } as unknown as Flashcard;
+
+  function renderKanji(kanjiPractice?: { enabled: boolean; classUsesKanji: boolean }) {
+    renderWithProviders(
+      <HandOutDialog
+        open
+        onClose={vi.fn()}
+        groupId="g1"
+        deckId="d2"
+        groupName="Tuesday Club"
+        wordCount={1}
+        cards={[KANJI_CARD]}
+        kanjiPractice={kanjiPractice}
+        kanaSets={[]}
+        onDone={vi.fn()}
+      />,
+    );
+  }
+
+  it('hides the kanji switch and leaves the setting alone when no word has kanji', async () => {
+    renderWithProviders(
+      <HandOutDialog
+        open
+        onClose={vi.fn()}
+        groupId="g1"
+        deckId="d2"
+        groupName="Tuesday Club"
+        wordCount={1}
+        cards={[{ ...KANJI_CARD, word: 'ねこ', reading: 'ねこ' }]}
+        kanaSets={[]}
+        onDone={vi.fn()}
+      />,
+    );
+    expect(screen.queryByLabelText('Kanji reading practice')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Hand out to 2 learners' }));
+    await vi.waitFor(() => expect(handOut).toHaveBeenCalled());
+    expect(handOut.mock.calls[0][0].kanjiPractice).toBeUndefined();
+  });
+
+  it('turns kanji practice on by default when the group already practises kanji', async () => {
+    renderKanji({ enabled: false, classUsesKanji: true });
+    expect(screen.getByLabelText('Kanji reading practice')).toBeChecked();
+    fireEvent.click(screen.getByRole('button', { name: 'Hand out to 2 learners' }));
+    await vi.waitFor(() =>
+      expect(handOut).toHaveBeenCalledWith(expect.objectContaining({ kanjiPractice: true })),
+    );
+  });
+
+  it('starts off for a kana-view deck in a group new to kanji, and sends the teacher choice', async () => {
+    renderKanji({ enabled: false, classUsesKanji: false });
+    const toggle = screen.getByLabelText('Kanji reading practice');
+    expect(toggle).not.toBeChecked();
+    fireEvent.click(toggle);
+    fireEvent.click(screen.getByRole('button', { name: 'Hand out to 2 learners' }));
+    await vi.waitFor(() =>
+      expect(handOut).toHaveBeenCalledWith(expect.objectContaining({ kanjiPractice: true })),
     );
   });
 });

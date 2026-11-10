@@ -1,4 +1,4 @@
-import type { ReadingLevelInput } from '@/lib/kanaGaps';
+import type { KanaReadingAnswer, ReadingLevelInput } from '@/lib/kanaGaps';
 import { LESSON_DOCUMENT_MIME_TYPES } from '@/lib/lessonDocuments';
 import { type JlptLevel, STYLE_NOTES_MAX } from '@/lib/lessonPrompts';
 import type { LessonDocument } from '@/types/lessonPlan';
@@ -59,6 +59,10 @@ export function defaultReadingLevel(level: JlptLevel): ReadingLevelInput {
     : { hiragana: 'yes', katakana: 'yes' };
 }
 
+export function defaultKanjiLevel(level: JlptLevel): KanaReadingAnswer {
+  return level === 'N5' ? 'not-yet' : 'yes';
+}
+
 export interface LessonSetForm {
   goal: string;
   weeks: number;
@@ -70,6 +74,7 @@ export interface LessonSetForm {
   withSentences: boolean;
   generateImages: boolean;
   readingLevel: ReadingLevelInput;
+  kanjiLevel: KanaReadingAnswer;
 }
 
 /** A study week ends on Sunday. */

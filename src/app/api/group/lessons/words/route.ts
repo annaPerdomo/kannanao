@@ -13,6 +13,7 @@ import type { Flashcard } from '@/types/flashcard';
 
 import { rateLimit } from '../../../_lib/rateLimit';
 import { allRows } from '../../_lib/allRows';
+import { groupUsesKanjiPractice } from '../../_lib/groupKanjiPractice';
 import { memberIdsFor } from '../../_lib/membership';
 import { requireGroupAccess } from '../../_lib/requireGroupAccess';
 import { getServiceSupabase } from '../../_lib/serviceSupabase';
@@ -101,7 +102,7 @@ export async function GET(req: NextRequest) {
   try {
     const { data: deck, error: deckErr } = await sb
       .from('decks')
-      .select('id, name, emoji')
+      .select('id, name, emoji, reading_practice')
       .eq('id', deckId)
       .eq('user_id', organizer.id)
       .single();
@@ -163,8 +164,15 @@ export async function GET(req: NextRequest) {
           memberIds,
         });
 
+    const classUsesKanji = memberId
+      ? false
+      : await groupUsesKanjiPractice(sb, { organizerId: organizer.id, groupId: group.id }).catch(
+          () => false,
+        );
+
     return NextResponse.json({
       deck: { id: deck.id, name: deck.name, emoji: deck.emoji },
+      kanjiPractice: { enabled: deck.reading_practice === true, classUsesKanji },
       learnerCount: memberIds.length,
       words,
       learner,
