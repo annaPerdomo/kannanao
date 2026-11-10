@@ -43,7 +43,7 @@ const DAY_READINGS = [
 ] as const;
 
 /** いちがつ…じゅうにがつ, indexed by month (0-based, as Date reports it). */
-const MONTH_READINGS = [
+export const MONTH_READINGS = [
   'いちがつ',
   'にがつ',
   'さんがつ',
@@ -63,7 +63,7 @@ const MONTH_READINGS = [
  * calendar week. `short` is the day's own kanji as it appears on a calendar;
  * `long` is the spoken 〜曜日 form.
  */
-const WEEKDAYS = [
+export const WEEKDAYS = [
   { kanji: '日', reading: 'にち', long: '日曜日', longReading: 'にちようび' },
   { kanji: '月', reading: 'げつ', long: '月曜日', longReading: 'げつようび' },
   { kanji: '火', reading: 'か', long: '火曜日', longReading: 'かようび' },
