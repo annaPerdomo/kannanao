@@ -364,6 +364,56 @@ describe('POST /api/group/lesson-plan/apply', () => {
     expect(assignments[0].title).toContain('Week 1');
   });
 
+  it('turns kanji practice on only for decks whose words have kanji', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } }, { data: { id: 'd2' } });
+    const plan = planWith(['Months', 'Animals']);
+    plan.decks[0].cards[0] = { ...plan.decks[0].cards[0], word: '一月', reading: 'いちがつ' };
+
+    const res = await POST(makeRequest({ ...BASE, plan, kanjiPractice: true }));
+    expect(res.status).toBe(200);
+    expect(rowsFor('decks').map((d) => d.reading_practice)).toEqual([true, false]);
+  });
+
+  it('keeps kanji practice off when the educator says the group is not there yet', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+    const plan = planWith(['Months']);
+    plan.decks[0].cards[0] = { ...plan.decks[0].cards[0], word: '一月', reading: 'いちがつ' };
+
+    await POST(makeRequest({ ...BASE, plan, kanjiPractice: false }));
+    expect(rowsFor('decks')[0].reading_practice).toBe(false);
+  });
+
+  it('drops a kanji goal from a deck that ends up without kanji practice', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } }, { data: { id: 'd2' } });
+    const plan = planWith(['Months', 'Animals']);
+    plan.decks[0].cards[0] = { ...plan.decks[0].cards[0], word: '一月', reading: 'いちがつ' };
+
+    await POST(makeRequest({ ...BASE, plan, kanjiPractice: true, requiredMode: 'reading' }));
+    expect(rowsFor('assignments').map((a) => a.required_mode)).toEqual(['reading', null]);
+  });
+
+  it('survives a plan card with no reading', async () => {
+    seedAccess();
+    insertReturns.decks.push({ data: { id: 'd1' } });
+    const plan = planWith(['Months']);
+    plan.decks[0].cards[0] = { word: '一月', meaning: 'January' } as never;
+
+    const res = await POST(makeRequest({ ...BASE, plan, kanjiPractice: true }));
+    expect(res.status).toBe(200);
+    expect(rowsFor('decks')[0].reading_practice).toBe(false);
+  });
+
+  it('rejects a kanjiPractice that is not a boolean', async () => {
+    seedAccess();
+    const res = await POST(
+      makeRequest({ ...BASE, plan: planWith(['Food']), kanjiPractice: 'yes' }),
+    );
+    expect(res.status).toBe(400);
+  });
+
   it('carries the image query and URL through when the plan card has them', async () => {
     seedAccess();
     insertReturns.decks.push({ data: { id: 'd1' } });

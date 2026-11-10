@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { isGoalMode } from '@/lib/assignmentMastery';
 import { isKanaSetId } from '@/lib/kanaCurriculum';
 import { MAX_COMPANION_KANA_ROWS } from '@/lib/kanaGaps';
+import { hasKanjiWords, isKanjiGoalMode } from '@/lib/kanjiPractice';
 import { KNOWN_WORD_CAP, type KnownWord } from '@/lib/knownWords';
 import { sortKanaSets } from '@/lib/lessonKana';
 import {
@@ -143,6 +144,7 @@ export async function POST(req: NextRequest) {
     kanaWeeks,
     kanaSets,
     title,
+    kanjiPractice,
   } = (body ?? {}) as {
     groupId?: string;
     plan?: LessonPlan;
@@ -161,6 +163,7 @@ export async function POST(req: NextRequest) {
     kanaWeeks?: { setId: string; dueDate: string | null }[];
     /** Pre-schedule clients sent a flat row list sharing the first due date. */
     kanaSets?: string[];
+    kanjiPractice?: boolean;
   };
 
   if (!groupId) {
@@ -218,6 +221,9 @@ export async function POST(req: NextRequest) {
   }
   if (styleNotes !== undefined && typeof styleNotes !== 'string') {
     return NextResponse.json({ error: 'styleNotes must be a string.' }, { status: 400 });
+  }
+  if (kanjiPractice !== undefined && typeof kanjiPractice !== 'boolean') {
+    return NextResponse.json({ error: 'kanjiPractice must be a boolean.' }, { status: 400 });
   }
   if (title !== undefined && typeof title !== 'string') {
     return NextResponse.json({ error: 'title must be a string.' }, { status: 400 });
@@ -341,6 +347,7 @@ export async function POST(req: NextRequest) {
       groupId,
       memberIds,
       planId: planId ?? null,
+      kanjiPractice: kanjiPractice === true,
       dueDate: dueDateFor(firstDueDate, index),
       availableOn: availableOnFor(firstDueDate, index),
       requiredAccuracy: requiredAccuracy ?? null,
@@ -426,6 +433,7 @@ async function createDeck(args: {
   groupId: string;
   memberIds: string[];
   planId: string | null;
+  kanjiPractice: boolean;
   dueDate: string | null;
   availableOn: string | null;
   requiredAccuracy: number | null;
@@ -436,6 +444,7 @@ async function createDeck(args: {
     args;
   const sb = getServiceSupabase();
   const name = deckNameFor(deck, index);
+  const kanjiOn = args.kanjiPractice && hasKanjiWords(deck.cards ?? []);
   const { data: created, error: deckError } = await sb
     .from('decks')
     .insert({
@@ -445,6 +454,7 @@ async function createDeck(args: {
       emoji: deck.emoji || null,
       position,
       lesson_plan_id: planId,
+      reading_practice: kanjiOn,
     })
     .select('id')
     .single();
@@ -504,7 +514,7 @@ async function createDeck(args: {
     dueDate,
     availableOn,
     requiredAccuracy: args.requiredAccuracy,
-    requiredMode: args.requiredMode,
+    requiredMode: !kanjiOn && isKanjiGoalMode(args.requiredMode) ? null : args.requiredMode,
     baselineAccuracy: args.baselineAccuracy,
   });
 

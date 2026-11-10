@@ -303,6 +303,15 @@ export async function buildLessonPlan(payload: {
   return res.json();
 }
 
+export async function fetchGroupKanjiInUse(groupId: string): Promise<boolean> {
+  const res = await fetch(`${BASE}/group/kanji-practice?groupId=${encodeURIComponent(groupId)}`, {
+    headers: await authHeaders(),
+  });
+  if (!res.ok) return false;
+  const body = await res.json().catch(() => ({}));
+  return body?.inUse === true;
+}
+
 export async function applyLessonPlan(payload: {
   groupId: string;
   plan: LessonPlan;
@@ -320,6 +329,7 @@ export async function applyLessonPlan(payload: {
   kanaWeeks?: { setId: string; dueDate: string | null }[];
   /** The unit's name in the Lesson Library — derived client-side from the goal text. */
   title?: string;
+  kanjiPractice?: boolean;
 }): Promise<{ results: ApplyDeckResult[]; kanaAssigned?: string[]; kanaFailed?: string[] }> {
   const res = await fetch(`${BASE}/group/lesson-plan/apply`, {
     method: 'POST',
