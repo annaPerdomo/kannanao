@@ -29,6 +29,7 @@ export function planAssignmentQuest({
       cardCount,
       fillCards: 0,
       readingCards: 0,
+      pickCards: 0,
       readingUnlocked: false,
       ttsReady: false,
       sentenceCount: 0,

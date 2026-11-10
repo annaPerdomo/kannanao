@@ -64,7 +64,7 @@ function kanjiCards(deck: PlanDeck): PlanDeck['cards'] {
   return (deck.cards ?? []).filter((card) => card.word && uniqueKanji(card.word).length > 0);
 }
 
-function modelSvg(kanji: string, data: KanjiStrokes | undefined, numbers: boolean): string {
+export function modelSvg(kanji: string, data: KanjiStrokes | undefined, numbers: boolean): string {
   if (data) return strokesSvg(data, { numbers });
   return `<svg viewBox="0 0 ${KANJIVG_VIEWBOX} ${KANJIVG_VIEWBOX}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><text x="54.5" y="88" font-size="86" text-anchor="middle" fill="#000">${escapeHtml(kanji)}</text></svg>`;
 }
@@ -79,7 +79,11 @@ function orderHtml(data: KanjiStrokes): string {
   return `<div class="order">${frames}</div>`;
 }
 
-function practiceBoxSvg(kanji: string, data: KanjiStrokes | undefined, trace: boolean): string {
+export function practiceBoxSvg(
+  kanji: string,
+  data: KanjiStrokes | undefined,
+  trace: boolean,
+): string {
   if (trace && data) {
     const glyph = strokesSvg(data, { color: '#c8c8c8', doneColor: '#c8c8c8' });
     return `<svg viewBox="0 0 ${KANJIVG_VIEWBOX} ${KANJIVG_VIEWBOX}" class="practicebox" xmlns="http://www.w3.org/2000/svg">${WRITING_BOX_GUIDE}${glyph}</svg>`;

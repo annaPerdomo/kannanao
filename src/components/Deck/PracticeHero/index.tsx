@@ -53,7 +53,9 @@ export function PracticeHero({
   // Absent, not locked, until the owner unlocks it: kana comes long before kanji.
   // Endings is absent the same way — most decks have no conjugation cards at all.
   const tiles = PRACTICE_CONFIG.filter((tile) => {
-    if (tile.mode === 'reading' || tile.mode === 'kanji-match') return readingUnlocked;
+    if (tile.mode === 'reading' || tile.mode === 'kanji-match' || tile.mode === 'reading-pick') {
+      return readingUnlocked;
+    }
     if (tile.mode === 'endings') return endingItemCount >= MIN_ENDING_ITEMS;
     return true;
   });

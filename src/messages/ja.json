@@ -199,6 +199,10 @@
         "label": "かんじペア",
         "description": "ことばと よみかたを ペアにする"
       },
+      "readingPick": {
+        "label": "よみかた えらび",
+        "description": "漢字を見て、正しい読み方をえらぼう"
+      },
       "quiz": {
         "label": "クイズ",
         "description": "一発勝負で実力チェック"
@@ -455,6 +459,7 @@
       "deckNotFound": "デッキが見つかりません。",
       "cardsInDeckLabel": "デッキのカード（{count}）",
       "reorderButton": "並べ替え",
+      "printButton": "印刷",
       "addCardsButton": "カードを追加",
       "reorderBannerLabel": "ドラッグしてカードを並べ替えできます。終わったら「完了」を押してください。",
       "noCardsMemberMessage": "まだカードがありません。リーダーがもうすぐ追加してくれます！",
@@ -773,6 +778,7 @@
         "listen": "リスニング",
         "reading": "よみかた",
         "kanjiMatch": "かんじペア",
+        "readingPick": "よみかた えらび",
         "endings": "おわりを えらぼう"
       }
     },
@@ -896,6 +902,11 @@
       "removeLastCharacter": "最後の文字を消す",
       "placeCharacterAria": "「{character}」を入れる",
       "seeResults": "結果を見る"
+    },
+    "readingPickMode": {
+      "prompt": "どれが ただしい？",
+      "calendarPrompt": "なんようび？",
+      "calendarAria": "カレンダー。{word}に しるしが ついています"
     },
     "roundTransition": {
       "allReviewed": "ぜんぶ復習した！",
@@ -1305,6 +1316,7 @@
         "listen": "リスニング",
         "reading": "よみかた",
         "kanjiMatch": "かんじペア",
+        "readingPick": "よみかた えらび",
         "endings": "おわりを えらぼう",
         "kanaJourney": "かなをまなぶ"
       },
@@ -1904,6 +1916,65 @@
       "sheetsBlankToggle": "書き込み用の空欄",
       "sheetsKanaButton": "かな表",
       "sheetsGroupButton": "グループの進み具合",
+      "sheetsCalendarTitle": "月と曜日",
+      "sheetsCalendarHint": "月（一月〜十二月）と曜日（日〜土）を別々のセットで：表、なぞり書き、いろいろな練習。印刷するたびに問題が変わります。",
+      "sheetsCalendarLearn": "表となぞり書きのページ",
+      "sheetsCalendarTest": "練習のページ",
+      "sheetsCalendarAnswerKey": "答え",
+      "sheetsCalendarKanaYou": "月曜日ではなく月よう日と書く",
+      "sheetsCalendarMonthsButton": "月のセットを印刷",
+      "sheetsCalendarDaysButton": "曜日のセットを印刷",
+      "sheetsCalendarError": "セットを作れませんでした。もう一度お試しください。",
+      "calendarPack": {
+        "learnHeading": "おぼえよう",
+        "learnHint": "声に出して読みましょう。下線のところが変わる部分です。",
+        "monthsHeading": "月",
+        "weekdaysHeading": "曜日",
+        "trickyNote": "★ 注意：四月は「しがつ」（よん ではない）、七月は「しちがつ」（なな ではない）、九月は「くがつ」（きゅう ではない）。",
+        "traceHeading": "なぞって、書こう",
+        "traceHint": "うすい字をなぞってから、空いているマスに自分で書きましょう。",
+        "kanjiHeading": "漢字を書こう",
+        "kanjiHint": "数字の順番に書きます。3つなぞってから、自分で書きましょう。",
+        "judgeHeading": "あってる？ まちがってる？",
+        "judgeHint": "あっていたら○、まちがっていたら×。まちがいは線の上に正しく書きましょう。",
+        "judgeRight": "正しい",
+        "gapHeading": "ぬけている字を書こう",
+        "gapHint": "太いマスに、ぬけているひらがなを1つ書きましょう。",
+        "matchHeading": "線でつなごう",
+        "matchHint": "漢字と読み方を線でつなぎましょう。",
+        "orderHeading": "つぎは なに？",
+        "orderHint": "ぬけているところを書きましょう。",
+        "myCalendarHeading": "わたしのカレンダー",
+        "myCalendarHint": "いちばん上のマスに日曜日から順に曜日の漢字を書いて、今日に○をつけましょう。",
+        "aboutHeading": "じぶんのこと",
+        "aboutHint": "ひらがなで答えを書きましょう。",
+        "aboutGlossesDays": [
+          "今日は何曜日ですか。",
+          "明日は何曜日ですか。",
+          "昨日は何曜日でしたか。"
+        ],
+        "aboutGlossesMonths": ["今は何月ですか。", "来月は何月ですか。", "誕生日は何月ですか。"],
+        "kanjiWriteHeading": "漢字で書こう",
+        "kanjiWriteHint": "読み方を見て、マスに漢字を書きましょう。",
+        "writeHeading": "読み方を書こう",
+        "writeHint": "読み方をひらがなで書きます。",
+        "numbersHeading": "一から十まで",
+        "numbersHint": "上の段はマスに漢字を、下の段は線に読み方を書きましょう。",
+        "nextHeading": "つぎは なんようび？",
+        "nextHint": "つぎの曜日をひらがなで書きましょう。",
+        "pictures": ["太陽", "月", "火", "水", "木", "金", "土"]
+      },
+      "sheetsReadingCheckTitle": "読み方チェック",
+      "sheetsReadingCheckHint": "このデッキの漢字のことば：まちがいさがし、ぬけている字、読み方を書く練習です。",
+      "sheetsReadingCheckButton": "読み方チェックを印刷",
+      "sheetsReadingCheckEmpty": "漢字で書くことばがありません。",
+      "readingCheckJudgeHeading": "あってる？ まちがってる？",
+      "readingCheckJudgeHint": "あっていたら○、まちがっていたら×。まちがいは線の上に正しく書きましょう。",
+      "readingCheckJudgeRight": "正しい",
+      "readingCheckGapHeading": "ぬけている字を書こう",
+      "readingCheckGapHint": "太いマスに、ぬけているひらがなを1つ書きましょう。",
+      "readingCheckWriteHeading": "読み方を書こう",
+      "readingCheckWriteHint": "読み方をひらがなで書きます。",
       "sheetsKanjiButton": "漢字の練習シート",
       "sheetsKanaTitle": "かな表",
       "sheetsKanaHint": "各列を上から下へ、あ・い・う・え・お と読みます。",

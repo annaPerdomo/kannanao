@@ -23,6 +23,7 @@ import { AddCardsModal } from '@/components/AddCards';
 import { AddExistingCardsDialog } from '@/components/AddExistingCardsDialog';
 import { DataErrorState } from '@/components/DataErrorState';
 import { BestQuizLine, DeckHeader, Label, PracticeHero } from '@/components/Deck';
+import { DeckPrintButton } from '@/components/Deck/DeckPrintButton';
 import { DeckSettingsDialog } from '@/components/DeckSettingsDialog';
 import { ImageCard } from '@/components/ImageCard';
 import { Loading } from '@/components/Loading';
@@ -356,6 +357,9 @@ export default function Deck({ deckId, onBack, onStudy, onPractice }: DeckProps)
               >
                 {reordering ? tCommon('done') : t('reorderButton')}
               </Button>
+            )}
+            {!isMemberAccount && !reordering && cards.length > 0 && (
+              <DeckPrintButton deck={deck} cards={cards} />
             )}
             {!isMemberAccount && !reordering && (
               <Button

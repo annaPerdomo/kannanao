@@ -38,6 +38,7 @@ export const PROGRESS_WRITES = {
   'kotoba-bubble': 'none',
   quiz: 'all',
   'kanji-match': 'all',
+  'reading-pick': 'all',
   endings: 'drill',
   'kana-journey': 'none',
 } satisfies Record<ChainMode, 'all' | 'drill' | 'none'>;

@@ -15,6 +15,7 @@ const MODE_EMOJI: Record<PracticeMode, string> = {
   listen: '🎧',
   reading: '📖',
   'kanji-match': '🀄',
+  'reading-pick': '🔎',
   endings: '✏️',
 };
 

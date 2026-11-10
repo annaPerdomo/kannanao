@@ -56,6 +56,13 @@ export const PRACTICE_CONFIG: PracticeTileConfig[] = [
     color: '#047857',
   },
   {
+    mode: 'reading-pick',
+    labelKey: 'readingPick.label',
+    descriptionKey: 'readingPick.description',
+    kanji: '選',
+    color: '#0F766E',
+  },
+  {
     mode: 'kanji-match',
     labelKey: 'kanjiMatch.label',
     descriptionKey: 'kanjiMatch.description',

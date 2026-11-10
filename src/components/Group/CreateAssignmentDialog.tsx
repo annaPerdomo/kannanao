@@ -97,7 +97,7 @@ export function CreateAssignmentDialog({
   // A kanji goal on a deck that hasn't unlocked Reading could never be met.
   const readingUnavailable: GoalMode[] = decks.find((d) => d.id === selectedDeck)?.readingPractice
     ? []
-    : ['reading', 'kanji-match'];
+    : ['reading', 'kanji-match', 'reading-pick'];
   // Drop a stale kanji goal when the organizer switches to a locked deck, and
   // any mode goal on switching to kana — the API rejects that combination.
   if (goalMode && (isKana || readingUnavailable.includes(goalMode))) {
