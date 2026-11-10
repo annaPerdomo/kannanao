@@ -10,10 +10,12 @@ import { StyledDialog } from '@/components/StyledDialog';
 import type { LessonPlan } from '@/types/lessonPlan';
 
 import { BingoSection } from './BingoSection';
+import { CalendarPackSection } from './CalendarPackSection';
 import { FlashcardSheetSection } from './FlashcardSheetSection';
 import { HomePracticeSection } from './HomePracticeSection';
 import { KanaSheetSection } from './KanaSheetSection';
 import { KanjiSheetSection } from './KanjiSheetSection';
+import { ReadingCheckSection } from './ReadingCheckSection';
 import { WorksheetSection } from './WorksheetSection';
 
 interface ReferenceSheetsDialogProps {
@@ -55,12 +57,14 @@ export function ReferenceSheetsDialog({
         <Typography variant="subtitle2">{t('sheetsPracticeHeading')}</Typography>
         <FlashcardSheetSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
         <WorksheetSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
+        <ReadingCheckSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
         <BingoSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
         <HomePracticeSection plan={plan} locale={locale} onPopupBlocked={setPopupBlocked} />
 
         <Divider />
 
         <Typography variant="subtitle2">{t('sheetsChartsHeading')}</Typography>
+        <CalendarPackSection locale={locale} onPopupBlocked={setPopupBlocked} />
         <KanaSheetSection
           groupId={groupId}
           locale={locale}
