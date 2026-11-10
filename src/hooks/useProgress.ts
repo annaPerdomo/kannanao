@@ -41,6 +41,7 @@ export type SessionMode =
   | 'listen'
   | 'reading'
   | 'kanji-match'
+  | 'reading-pick'
   | 'endings'
   | 'speech_read'
   | 'speech_recall'

@@ -187,6 +187,26 @@ describe('fitDaily', () => {
     expect(fitDaily(legs, 3)).toEqual([leg('recall'), leg('kotoba-bubble'), leg('listen')]);
   });
 
+  it('keeps the reading pick ahead of the production closer', () => {
+    const legs: ChainLeg[] = [
+      leg('recall'),
+      leg('reading-pick'),
+      leg('kotoba-bubble'),
+      { step: 'goal', mode: 'reading' },
+    ];
+    expect(fitDaily(legs, 3)).toEqual([leg('recall'), leg('reading-pick'), leg('kotoba-bubble')]);
+  });
+
+  it('keeps the meaning round ahead of the reading pick after a warm-up', () => {
+    const study: ChainLeg = { step: 'warmup', mode: 'study' };
+    const legs = [study, leg('recall'), leg('reading-pick'), leg('kotoba-bubble')];
+    expect(fitDaily(legs, 3)).toEqual([study, leg('recall'), leg('kotoba-bubble')]);
+    expect(fitDaily([study, leg('recall'), leg('reading-pick')], 2)).toEqual([
+      study,
+      leg('recall'),
+    ]);
+  });
+
   it('never double-counts the sentence leg when it is also the opener', () => {
     const legs = [leg('kotoba-bubble'), leg('match'), leg('fill')];
     expect(fitDaily(legs, 2)).toEqual([leg('kotoba-bubble'), leg('match')]);

@@ -21,6 +21,7 @@ const support = (overrides: Partial<MixedDeckSupport> = {}): MixedDeckSupport =>
   cardCount: 12,
   fillCards: 12,
   readingCards: 12,
+  pickCards: 0,
   readingUnlocked: false,
   ttsReady: false,
   sentenceCount: 0,
@@ -400,6 +401,7 @@ describe('deckSupport', () => {
       cardCount: 3,
       fillCards: 2,
       readingCards: 2,
+      pickCards: 2,
       readingUnlocked: true,
       ttsReady: false,
       sentenceCount: 8,
@@ -445,5 +447,86 @@ describe('pickMixedSessionCards', () => {
   it('leaves deck order alone when nothing separates two cards', () => {
     const cards = [card({ id: 'a' }), card({ id: 'b' }), card({ id: 'c' })];
     expect(pickMixedSessionCards(cards, [], now).map((c) => c.id)).toEqual(['a', 'b', 'c']);
+  });
+});
+
+describe('reading-pick leg', () => {
+  const kanji = support({ readingUnlocked: true, pickCards: 12 });
+  const modes = (legs: ChainLeg[]) => legs.map((leg) => leg.mode);
+
+  it('follows recall once a word has been met', () => {
+    const legs = planMixedPractice({ support: kanji, counts: { new: 0, learning: 6, strong: 6 } });
+    expect(modes(legs).slice(0, 2)).toEqual(['recall', 'reading-pick']);
+  });
+
+  it('stays out while every word is new, the switch is off, or too few words qualify', () => {
+    const met = { new: 0, learning: 12, strong: 0 };
+    expect(
+      modes(planMixedPractice({ support: kanji, counts: { new: 12, learning: 0, strong: 0 } })),
+    ).not.toContain('reading-pick');
+    expect(
+      modes(planMixedPractice({ support: support({ pickCards: 12 }), counts: met })),
+    ).not.toContain('reading-pick');
+    expect(
+      modes(
+        planMixedPractice({
+          support: support({ readingUnlocked: true, pickCards: 3 }),
+          counts: met,
+        }),
+      ),
+    ).not.toContain('reading-pick');
+  });
+
+  it('survives the trim when games and listening have to go', () => {
+    const legs = planMixedPractice({
+      support: support({
+        readingUnlocked: true,
+        pickCards: 12,
+        ttsReady: true,
+        sentenceCount: 8,
+      }),
+      counts: { new: 0, learning: 6, strong: 6 },
+    });
+    expect(modes(legs)).toEqual(['recall', 'reading-pick', 'kotoba-bubble', 'reading']);
+  });
+
+  it('holds the tile-building reading leg back while new words are still coming in', () => {
+    const legs = planMixedPractice({
+      support: support({ readingUnlocked: true, pickCards: 12, sentenceCount: 8 }),
+      counts: { new: 4, learning: 4, strong: 4 },
+    });
+    expect(modes(legs)).toEqual(['study', 'recall', 'reading-pick', 'kotoba-bubble']);
+  });
+
+  it('gives way to Pick the Ending on a grammar deck', () => {
+    const legs = planMixedPractice({
+      support: support({
+        readingUnlocked: true,
+        pickCards: 12,
+        ttsReady: true,
+        sentenceCount: 8,
+        endingItems: 8,
+        drillItems: 8,
+      }),
+      counts: { new: 0, learning: 6, strong: 6 },
+    });
+    expect(modes(legs)).toEqual(['recall', 'endings', 'kotoba-bubble', 'reading']);
+  });
+
+  it('never costs a new-word session its meaning round', () => {
+    const legs = planMixedPractice({
+      support: support({ readingUnlocked: true, pickCards: 4, readingCards: 3, sentenceCount: 8 }),
+      counts: { new: 4, learning: 4, strong: 4 },
+    });
+    expect(modes(legs)).toEqual(['study', 'recall', 'kotoba-bubble', 'fill']);
+  });
+
+  it('can be excluded by a quest that owns it as the goal', () => {
+    const legs = planMixedPractice({
+      support: kanji,
+      counts: { new: 0, learning: 6, strong: 6 },
+      exclude: ['reading-pick'],
+    });
+    expect(modes(legs)).not.toContain('reading-pick');
   });
 });

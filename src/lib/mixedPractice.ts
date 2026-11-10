@@ -12,6 +12,7 @@ import {
   eligibleReadingCards,
   MIN_READING_CARDS,
 } from '@/components/Practice/ReadingMode/eligibility';
+import { eligiblePickCards, MIN_PICK_CARDS } from '@/components/Practice/ReadingPickMode/questions';
 import type { Flashcard } from '@/types/flashcard';
 
 import { cardStrength, type StrengthCounts } from './cardStrength';
@@ -28,6 +29,7 @@ export interface MixedDeckSupport {
   fillCards: number;
   /** Cards with kanji to hide a reading behind. */
   readingCards: number;
+  pickCards: number;
   readingUnlocked: boolean;
   /** A Japanese voice resolved — Listen is useless without one. */
   ttsReady: boolean;
@@ -60,6 +62,7 @@ export function deckSupport(
     cardCount: cards.length,
     fillCards: cards.filter((c) => c.example_jp.trim()).length,
     readingCards: eligibleReadingCards(cards).length,
+    pickCards: eligiblePickCards(cards).length,
     readingUnlocked,
     ttsReady,
     sentenceCount,
@@ -120,6 +123,12 @@ function productionLeg({ support, counts }: MixedPlanInput): ChainLeg | null {
   return null;
 }
 
+function pickLeg({ support, counts }: MixedPlanInput): ChainLeg | null {
+  if (!support.readingUnlocked || support.pickCards < MIN_PICK_CARDS) return null;
+  if (counts.new >= support.cardCount) return null;
+  return { step: 'practice', mode: 'reading-pick' };
+}
+
 /** Grammar practice on brand-new words, so it carries no strength condition. */
 function sentenceLeg(support: MixedDeckSupport): ChainLeg | null {
   return support.sentenceCount >= MIN_SENTENCES
@@ -164,12 +173,18 @@ export function planMixedPractice(input: MixedPlanInput): ChainLeg[] {
   if (support.cardCount < 2) return [];
 
   const keep = (leg: ChainLeg) => !exclude.includes(leg.mode);
-  const production = productionLeg(input);
+  const pick = pickLeg(input);
+  const built = productionLeg(input);
+  // Building a reading from tiles waits while there are still new words and the
+  // easier pick is on offer: both in one session crowd out everything else.
+  const production =
+    pick && keep(pick) && built?.mode === 'reading' && counts.new > 0 ? null : built;
   const sentence = sentenceLeg(support);
 
   const unfiltered: ChainLeg[] = [];
   if (counts.new > 0) unfiltered.push({ step: 'warmup', mode: 'study' });
   unfiltered.push({ step: 'practice', mode: 'recall' });
+  if (pick) unfiltered.push(pick);
   if (sentence) unfiltered.push(sentence);
   // Hearing a word never seen written is guesswork, so Listen waits for a card
   // that has been answered at least once.

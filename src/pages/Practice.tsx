@@ -20,6 +20,11 @@ import {
   MIN_READING_CARDS,
   ReadingMode,
 } from '@/components/Practice/ReadingMode';
+import {
+  eligiblePickCards,
+  MIN_PICK_CARDS,
+  ReadingPickMode,
+} from '@/components/Practice/ReadingPickMode';
 import { RecallMode } from '@/components/Practice/RecallMode';
 import { PracticeStage } from '@/components/PracticeStage';
 import { useCards } from '@/hooks/useCards';
@@ -58,8 +63,8 @@ export default function Practice({
     const wanted = new Set(cardIds);
     return deckCards.filter((c) => wanted.has(c.id));
   }, [deckCards, cardIds]);
-  // Both kanji modes hang off the deck's one Reading switch.
-  const needsKanji = mode === 'reading' || mode === 'kanji-match';
+  // Every kanji mode hangs off the deck's one Reading switch.
+  const needsKanji = mode === 'reading' || mode === 'kanji-match' || mode === 'reading-pick';
   const {
     decks,
     loading: decksLoading,
@@ -77,6 +82,7 @@ export default function Practice({
     listen: t('modeTitles.listen'),
     reading: t('modeTitles.reading'),
     'kanji-match': t('modeTitles.kanjiMatch'),
+    'reading-pick': t('modeTitles.readingPick'),
     endings: t('modeTitles.endings'),
   };
   // Fill-in-the-blank needs a sentence to blank out. A card with no example
@@ -88,9 +94,11 @@ export default function Practice({
       ? cards.filter((c) => c.example_jp.trim())
       : mode === 'endings'
         ? cards.filter((c) => findEnding(c) !== null)
-        : needsKanji
-          ? eligibleReadingCards(cards)
-          : cards;
+        : mode === 'reading-pick'
+          ? eligiblePickCards(cards)
+          : needsKanji
+            ? eligibleReadingCards(cards)
+            : cards;
   const badge = t('cardsBadge', { count: modeCards.length });
 
   if (loading || decksLoading) {
@@ -122,7 +130,8 @@ export default function Practice({
   const kanjiUnits = mode === 'kanji-match' ? kanjiMatchPairs(modeCards).length : modeCards.length;
 
   // Locked and too-few-cards get the same message, so neither is a dead end.
-  if (readingLocked || (needsKanji && kanjiUnits < MIN_READING_CARDS)) {
+  const minKanjiUnits = mode === 'reading-pick' ? MIN_PICK_CARDS : MIN_READING_CARDS;
+  if (readingLocked || (needsKanji && kanjiUnits < minKanjiUnits)) {
     return (
       <Box
         sx={{ maxWidth: LAYOUT.narrowMaxWidth, mx: 'auto', px: LAYOUT.pagePx, py: LAYOUT.pagePy }}
@@ -246,6 +255,14 @@ export default function Practice({
       )}
       {mode === 'reading' && (
         <ReadingMode
+          cards={modeCards}
+          deckId={deckId}
+          batchSize={effectiveBatchSize}
+          onExit={onBack}
+        />
+      )}
+      {mode === 'reading-pick' && (
+        <ReadingPickMode
           cards={modeCards}
           deckId={deckId}
           batchSize={effectiveBatchSize}

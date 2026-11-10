@@ -9,6 +9,7 @@ export type PracticeMode =
   | 'listen'
   | 'reading'
   | 'kanji-match'
+  | 'reading-pick'
   | 'endings';
 
 export interface AppState {

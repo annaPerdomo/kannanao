@@ -84,6 +84,30 @@ describe('kanji match mode registration', () => {
   });
 });
 
+describe('reading pick mode registration', () => {
+  it('should have a tile on the deck practice picker', () => {
+    const tile = PRACTICE_CONFIG.find((t) => t.mode === 'reading-pick');
+    expect(tile).toBeDefined();
+    expect(tile?.kanji).toBe('選');
+    expect(tile?.labelKey).toBe('readingPick.label');
+  });
+
+  it('should have a stats label and colour', () => {
+    expect(MODE_LABELS['reading-pick']).toBe('Pick the Reading');
+    expect(MODE_COLORS['reading-pick']).toMatch(/^#[0-9A-F]{6}$/i);
+  });
+
+  it('should have celebration emojis', () => {
+    expect(MODE_EMOJIS['reading-pick'].length).toBeGreaterThan(0);
+  });
+
+  it('should be assignable as an organizer goal mode', () => {
+    expect(GOAL_MODES).toContain('reading-pick');
+    expect(GOAL_MODE_LABELS['reading-pick']).toBe('Pick the Reading');
+    expect(isGoalMode('reading-pick')).toBe(true);
+  });
+});
+
 describe('endings mode registration', () => {
   it('should have a tile on the deck practice picker', () => {
     const tile = PRACTICE_CONFIG.find((t) => t.mode === 'endings');

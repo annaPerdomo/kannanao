@@ -11,6 +11,7 @@ export const MODE_EMOJI: Record<ChainMode, string> = {
   'kotoba-bubble': '🫧',
   quiz: '🏁',
   'kanji-match': '🀄',
+  'reading-pick': '🔎',
   endings: '🎚️',
   'kana-journey': '🗺️',
 };

@@ -51,7 +51,11 @@ export function useStartAssignmentQuest() {
       if (goal && !chainLegHref(deckId, { step: 'goal', mode: goal }, 'assignment')) {
         return deckPage();
       }
-      if ((goal === 'reading' || goal === 'kanji-match') && deck && deck.readingPractice !== true) {
+      if (
+        (goal === 'reading' || goal === 'kanji-match' || goal === 'reading-pick') &&
+        deck &&
+        deck.readingPractice !== true
+      ) {
         return deckPage();
       }
 

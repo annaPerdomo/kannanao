@@ -136,7 +136,7 @@ export interface DailyPlanInput {
 function focusGoal(focus: FocusPick): GoalMode | null {
   const mode = focus.assignment?.requiredMode;
   if (!isGoalMode(mode) || mode === 'review') return null;
-  if (mode === 'reading' && !focus.readingUnlocked) return null;
+  if ((mode === 'reading' || mode === 'reading-pick') && !focus.readingUnlocked) return null;
   return mode;
 }
 
@@ -144,9 +144,20 @@ export function fitDaily(legs: ChainLeg[], budget: number): ChainLeg[] {
   if (legs.length <= budget) return legs;
   if (budget <= 0) return [];
   const sentenceIndex = legs.findIndex((leg) => leg.mode === 'kotoba-bubble');
+  const pickIndex = legs.findIndex((leg) => leg.mode === 'reading-pick');
+  // After a warm-up of new words, meaning comes before spelling.
+  const recallIndex =
+    legs[0].step === 'warmup' ? legs.findIndex((leg) => leg.mode === 'recall') : -1;
   const lastIndex = legs.length - 1;
   const lastIsGoal = legs[lastIndex].step === 'goal';
-  const priority = [0, sentenceIndex, ...(lastIsGoal ? [lastIndex] : []), ...legs.map((_, i) => i)];
+  const priority = [
+    0,
+    sentenceIndex,
+    recallIndex,
+    pickIndex,
+    ...(lastIsGoal ? [lastIndex] : []),
+    ...legs.map((_, i) => i),
+  ];
   const chosen = new Set<number>();
   for (const index of priority) {
     if (index < 0 || chosen.has(index)) continue;
